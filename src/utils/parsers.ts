@@ -42,12 +42,15 @@ export const parseTikTokItems = (items: SuperfeedrItem[]) =>
 
         text = parseText(text);
 
+        const [, thumbnailUrl] = /<img\s+[^>]*src="([^"]+)"/i.exec(item.summary) || [];
+
         return {
             text,
             external: {
                 uri: item.permalinkUrl,
                 title: text,
                 description: 'TikTok video by Critical Role',
+                ...thumbnailUrl ? { thumb: { data: thumbnailUrl } } : {},
             },
         };
     });
