@@ -14,7 +14,7 @@ export const parseItems = (items: SuperfeedrItem[]) =>
     }));
 
 const tiktokHandles = {
-    '@LauraBaileyVO': 'Laura Bailey',
+    '@LauraBaileyVO': '@laurabaileyvo.bsky.social',
     '@Liam O’Brien': '@voiceofobrien.bsky.social',
     '@Marisha Ray641': 'Marisha Ray',
     '@MatthewMercerVO': '@matthewmercer.bsky.social',
