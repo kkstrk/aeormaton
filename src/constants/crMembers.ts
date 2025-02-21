@@ -4,13 +4,13 @@ const crMembers = [
         tiktok: '@Smashley Johnson',
     },
     {
-        name: 'Laura Bailey',
         bsky: '@laurabaileyvo.bsky.social',
+        name: 'Laura Bailey',
         tiktok: '@LauraBaileyVO',
     },
     {
-        name: 'Liam O\'Brien',
         bsky: '@voiceofobrien.bsky.social',
+        name: "Liam O'Brien",
         tiktok: '@Liam O’Brien',
     },
     {
@@ -18,13 +18,13 @@ const crMembers = [
         tiktok: '@Marisha Ray641',
     },
     {
-        name: 'Matthew Mercer',
         bsky: '@matthewmercer.bsky.social',
+        name: 'Matthew Mercer',
         tiktok: '@MatthewMercerVO',
     },
     {
-        name: 'Sam Riegel',
         bsky: '@samriegel.bsky.social',
+        name: 'Sam Riegel',
         tiktok: '@SamRiegel',
     },
     {
@@ -32,18 +32,18 @@ const crMembers = [
         tiktok: '@WillingBlam',
     },
     {
-        name: 'Brennan Lee Mulligan',
         bsky: '@brennanleemulligan.bsky.social',
+        name: 'Brennan Lee Mulligan',
     },
     {
         name: 'Robbie Daymond',
         tiktok: '@Robbie Daymond',
     },
     {
-        name: 'Dani Carr',
         bsky: '@itsdanicarr.bsky.social',
+        name: 'Dani Carr',
         tiktok: '@Dani Carr',
-    }
+    },
 ];
 
 export default crMembers;

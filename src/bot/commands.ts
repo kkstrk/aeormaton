@@ -20,10 +20,10 @@ const commands = {
     [RUNTIME_COMMAND]: async () => {
         const command = await getCommand(RUNTIME_COMMAND);
         const date = new Intl.DateTimeFormat('en-US', {
-            year: 'numeric',
-            month: 'short',
             day: 'numeric',
+            month: 'short',
             timeZone: 'America/Los_Angeles',
+            year: 'numeric',
         }).format(new Date(command.updatedAt));
         return `${command.message} [Updated ${date}]`;
     },
@@ -34,7 +34,7 @@ const commands = {
 };
 
 export const handleCommands = async (post: Post) => {
-    const allCommandNames = post.text.match(/!\S+/g) || [];
+    const allCommandNames = post.text.match(/!\S+/gu) || [];
     const commandNames = [...new Set(allCommandNames)].filter(
         (commandName) => !!commands[commandName],
     );

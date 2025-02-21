@@ -1,13 +1,7 @@
 import assert from 'assert/strict';
-import {
-    describe,
-    it,
-} from 'node:test';
+import { describe, it } from 'node:test';
 
-import {
-    isToday,
-    getDifference,
-} from './dates';
+import { getDifference, isToday } from './dates';
 
 describe('isToday', () => {
     it('should return true if the date is today', () => {

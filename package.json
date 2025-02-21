@@ -8,7 +8,7 @@
         "dev": "tsx watch src/index.ts",
         "build": "tsc",
         "start": "tsx dist/index.js",
-        "lint": "npx eslint .",
+        "lint": "npx eslint . && tsc --noEmit",
         "prettier": "npx prettier . --write",
         "test": "tsx --test"
     },

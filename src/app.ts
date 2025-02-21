@@ -3,7 +3,7 @@ import cors from 'cors';
 import type { PostPayload } from '@skyware/bot';
 
 import { bot } from './bot/bot';
-import { parseItems, parseTikTokItems, parseNewsItems } from './utils/parsers';
+import { parseItems, parseNewsItems, parseTikTokItems } from './utils/parsers';
 import type { SuperfeedrItem } from './types';
 
 export const app = express();
@@ -16,9 +16,10 @@ app.use(express.text({ type: 'text/html' }));
 
 // healthcheck endpoint
 app.get('/', (_req, res) => {
-    res.status(200).send({ status: 'ok', bot: bot.hasSession });
+    res.status(200).send({ bot: bot.hasSession, status: 'ok' });
 });
 
+// eslint-disable-next-line new-cap
 const api = express.Router();
 
 const useEndpoint = (endpoint: string, parser: (items: SuperfeedrItem[]) => PostPayload[]) => {
