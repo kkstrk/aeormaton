@@ -9,7 +9,8 @@
         "build": "tsc",
         "start": "tsx dist/index.js",
         "lint": "npx eslint .",
-        "prettier": "npx prettier . --write"
+        "prettier": "npx prettier . --write",
+        "test": "tsx --test"
     },
     "dependencies": {
         "@skyware/bot": "^0.3.8",

@@ -13,4 +13,4 @@ export const getRemainingTime = (date: Date) => {
     return `${days} days, ${hours} hours and ${minutes} minutes`;
 };
 
-export const getDifference = (date: Date) => Math.ceil((+date - +new Date()) / 1000 / 60 / 60 / 24);
+export const getDifference = (date: Date) => Math.ceil((+date - +new Date()) / 1000 / 60 / 60);

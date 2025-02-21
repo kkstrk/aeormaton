@@ -1,4 +1,9 @@
 import type { SuperfeedrItem } from '../types';
+import {
+    crMembers,
+    newsBlacklist,
+    newsSources,
+} from '../constants';
 import { getDifference } from './dates';
 
 // todo: keep text within bsky char limit
@@ -13,31 +18,26 @@ export const parseItems = (items: SuperfeedrItem[]) =>
         external: item.permalinkUrl,
     }));
 
-const tiktokHandles = {
-    '@LauraBaileyVO': '@laurabaileyvo.bsky.social',
-    '@Liam O’Brien': '@voiceofobrien.bsky.social',
-    '@Marisha Ray641': 'Marisha Ray',
-    '@MatthewMercerVO': '@matthewmercer.bsky.social',
-    '@Robbie Daymond': 'Robbie Daymond',
-    '@SamRiegel': '@samriegel.bsky.social',
-    '@Smashley Johnson': 'Ashley Johnson',
-    '@WillingBlam': 'Travis Willingham',
-};
+
+const tiktokMembersRegex = new RegExp(
+    crMembers
+        .map(({ name, tiktok = name }) => tiktok.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+        .join('|'),
+    'g',
+);
 
 export const parseTikTokItems = (items: SuperfeedrItem[]) =>
     items.map((item) => {
         // remove mentions and hashtags at the end of the string
-        let text = item.title.replace(/[\s@#\w'`’]+$/, '');
+        let text = item.title.replace(/[@#][\s@#\w'`’]*$/, '');
 
         // replace TikTok handles with Bluesky handles
         text = text.replace(
-            new RegExp(
-                Object.keys(tiktokHandles)
-                    .map((handle) => handle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
-                    .join('|'),
-                'g',
-            ),
-            (handle) => tiktokHandles[handle],
+            tiktokMembersRegex,
+            (match) => {
+                const member = crMembers.find(({ name, tiktok = name }) => tiktok === match);
+                return member.bsky || member.name;
+            },
         );
 
         text = parseText(text);
@@ -55,18 +55,55 @@ export const parseTikTokItems = (items: SuperfeedrItem[]) =>
         };
     });
 
+
+const newsMembersRegex = new RegExp(
+    crMembers
+        .map(({ name }) => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+        .join('|'),
+    'g',
+);
+
+const newsSourcesRegex = new RegExp(
+    `(${Object.keys(newsSources)
+    .map((handle) => handle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('|')})$`
+);
+
 export const parseNewsItems = (items: SuperfeedrItem[]) => {
-    // filter items published less than 3 days ago
-    const filteredItems = items.filter(
-        ({ published }) => getDifference(new Date(published * 1000)) >= -3,
-    );
+    // filter items published less than 2 days ago and not in blacklist
+    const filteredItems = items.filter(({ published, title }) => (
+        getDifference(new Date(published * 1000)) >= -48 && !newsBlacklist.some((blacklist) => title.includes(blacklist))
+    ));
     return filteredItems.map((item) => {
-        const text = parseText(item.title);
+        let text = item.title.replace('Critical Role', '#CriticalRole');
+
+        // add Bluesky handles for CR members
+        const replacedMembers = new Set<string>();
+        text = text.replace(
+            newsMembersRegex,
+            (match) => {
+                const member = crMembers.find(({ name }) => name === match);
+                if (!replacedMembers.has(match) && member.bsky) {
+                    replacedMembers.add(match);
+                    return `${match} (${member.bsky})`;
+                }
+                return match;
+            },
+        );
+
+        // add Bluesky handles for news sources
+        text = text.replace(
+            newsSourcesRegex,
+            (match) => `${match} (${newsSources[match]})`,
+        );
+
+        text = parseText(text);
+
         return {
             text,
             external: {
                 uri: item.permalinkUrl,
-                title: text,
+                title: item.title,
                 description: 'Google News - Critical Role',
             },
         };
