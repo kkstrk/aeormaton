@@ -22,6 +22,7 @@ export default tseslint.config(
             'one-var': 'off',
             'require-atomic-updates': 'off',
             'sort-imports': 'off',
+            'sort-keys': 'off',
         },
     },
     {

@@ -22,12 +22,12 @@ app.get('/', (_req, res) => {
 // eslint-disable-next-line new-cap
 const api = express.Router();
 
-const useEndpoint = (endpoint: string, parser: (items: SuperfeedrItem[]) => PostPayload[]) => {
+const useEndpoint = (endpoint: string, parser: (items: SuperfeedrItem[]) => PostPayload[] | Promise<PostPayload[]>) => {
     api.post(endpoint, async (req, res) => {
         console.log(`POST at ${endpoint} with body:`);
         console.log(req.body);
         try {
-            const posts = parser(req.body.items);
+            const posts = await parser(req.body.items);
             for (const post of posts) {
                 console.log(`Posting ${JSON.stringify(post)}.`);
                 await bot.post(post);

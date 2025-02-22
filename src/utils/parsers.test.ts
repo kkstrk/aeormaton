@@ -40,6 +40,7 @@ describe('parseTikTokItems', () => {
         assert.equal(result.length, items.length);
         result.forEach((post, index) => {
             assert.equal(post.text, items[index].title);
+            assert.ok(typeof post.external !== 'string');
             assert.equal(post.external.uri, items[index].permalinkUrl);
             assert.equal(post.external.title, items[index].title);
         });
@@ -80,30 +81,29 @@ describe('parseTikTokItems', () => {
 });
 
 describe('parseNewsItems', () => {
-    it('should return an array of posts', () => {
+    it('should return an array of posts', async () => {
         const items = [
             { ...mockItem, title: 'title1' },
             { ...mockItem, title: 'title2' },
         ];
-        const result = parseNewsItems(items);
+        const result = await parseNewsItems(items);
         assert.equal(result.length, items.length);
         result.forEach((post, index) => {
             assert.equal(post.text, items[index].title);
-            assert.equal(post.external.uri, items[index].permalinkUrl);
-            assert.equal(post.external.title, items[index].title);
+            assert.equal(post.external, items[index].permalinkUrl);
         });
     });
 
-    it('should exclude posts published more than 48 hours ago', () => {
-        const result = parseNewsItems([
+    it('should exclude posts published more than 48 hours ago', async () => {
+        const result = await parseNewsItems([
             { ...mockItem, published: new Date().setHours(new Date().getHours() - 49) / 1000 },
             { ...mockItem, published: new Date().setDate(new Date().getDate() - 3) / 1000 },
         ]);
         assert.equal(result.length, 0);
     });
 
-    it('should exclude posts with blacklisted text', () => {
-        const result = parseNewsItems([
+    it('should exclude posts with blacklisted text', async () => {
+        const result = await parseNewsItems([
             { ...mockItem, title: 'A post - MSN' },
             { ...mockItem, title: 'A post - Yahoo Entertainment' },
             { ...mockItem, title: 'This is likely not a post about critical role' },
@@ -111,8 +111,8 @@ describe('parseNewsItems', () => {
         assert.equal(result.length, 0);
     });
 
-    it('should replace first occurrence of Critical Role with #CriticalRole', () => {
-        const result = parseNewsItems([
+    it('should replace first occurrence of Critical Role with #CriticalRole', async () => {
+        const result = await parseNewsItems([
             { ...mockItem, title: 'A post w/ Critical Role' },
             { ...mockItem, title: 'A post w/ Critical Role. Also, Critical Role' },
         ]);
@@ -120,8 +120,8 @@ describe('parseNewsItems', () => {
         assert.equal(result[1].text, 'A post w/ #CriticalRole. Also, Critical Role');
     });
 
-    it('should add bsky handles for CR members', () => {
-        const result = parseNewsItems([
+    it('should add bsky handles for CR members', async () => {
+        const result = await parseNewsItems([
             { ...mockItem, title: 'A post w/ Marisha Ray' },
             { ...mockItem, title: 'A post w/ Laura Bailey' },
             { ...mockItem, title: 'A post w/ Matthew Mercer and Matthew Mercer' },
@@ -139,8 +139,8 @@ describe('parseNewsItems', () => {
         );
     });
 
-    it('should add bsky handles for news sources', () => {
-        const result = parseNewsItems([
+    it('should add bsky handles for news sources', async () => {
+        const result = await parseNewsItems([
             { ...mockItem, title: 'A post - Variety' },
             { ...mockItem, title: 'A post - XYZ' },
             { ...mockItem, title: 'A post w/ Polygon - Polygon' },

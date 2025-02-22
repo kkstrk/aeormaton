@@ -1,6 +1,9 @@
+import type { PostPayload } from '@skyware/bot';
+
 import type { SuperfeedrItem } from '../types';
 import { crMembers, newsBlacklist, newsSources } from '../constants';
 import { getDifference } from './dates';
+import decodeGoogleNewsUrl from './decodeGoogleNewsUrl';
 
 // todo: keep text within bsky char limit
 const parseText = (text: string) => {
@@ -8,7 +11,7 @@ const parseText = (text: string) => {
     return parsedText;
 };
 
-export const parseItems = (items: SuperfeedrItem[]) =>
+export const parseItems = (items: SuperfeedrItem[]): PostPayload[] =>
     items.map((item) => ({
         external: item.permalinkUrl,
         text: parseText(item.title),
@@ -21,7 +24,7 @@ const tiktokMembersRegex = new RegExp(
     'gu',
 );
 
-export const parseTikTokItems = (items: SuperfeedrItem[]) =>
+export const parseTikTokItems = (items: SuperfeedrItem[]): PostPayload[] =>
     items.map((item) => {
         // remove mentions and hashtags at the end of the string
         let text = item.title.replace(/[@#][\s@#\w'`’]*$/u, '');
@@ -59,14 +62,19 @@ const newsSourcesRegex = new RegExp(
     'u',
 );
 
-export const parseNewsItems = (items: SuperfeedrItem[]) => {
+export const parseNewsItems = async (items: SuperfeedrItem[]): Promise<PostPayload[]> => {
     // filter items published less than 2 days ago and not in blacklist
     const filteredItems = items.filter(
         ({ published, title }) =>
             getDifference(new Date(published * 1000)) >= -48 &&
             !newsBlacklist.some((blacklist) => title.includes(blacklist)),
     );
-    return filteredItems.map((item) => {
+
+    const decodedUrls = await Promise.all(
+        filteredItems.map(async (item) => await decodeGoogleNewsUrl(item.permalinkUrl))
+    );
+
+    return filteredItems.map((item, index) => {
         let text = item.title.replace('Critical Role', '#CriticalRole');
 
         // add Bluesky handles for CR members
@@ -86,11 +94,7 @@ export const parseNewsItems = (items: SuperfeedrItem[]) => {
         text = parseText(text);
 
         return {
-            external: {
-                description: 'Google News - Critical Role',
-                title: item.title,
-                uri: item.permalinkUrl,
-            },
+            external: decodedUrls[index],
             text,
         };
     });
