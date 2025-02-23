@@ -5,10 +5,16 @@ import { crMembers, newsBlacklist, newsSources } from '../constants';
 import { getDifference } from './dates';
 import decodeGoogleNewsUrl from './decodeGoogleNewsUrl';
 
-// todo: keep text within bsky char limit
-const parseText = (text: string) => {
-    const parsedText = text.trim();
-    return parsedText;
+const parseText = (text: string, limit = 300) => {
+    const trimmedText = text.trim();
+    if (trimmedText.length <= limit) {
+        return trimmedText;
+    }
+    const words = trimmedText.split(/\s+/u);
+    while ((words.join(' ').length + 3) > limit) {
+        words.pop();
+    }
+    return `${words.join(' ')}...`;
 };
 
 export const parseItems = (items: SuperfeedrItem[]): PostPayload[] =>

@@ -28,6 +28,15 @@ describe('parseItems', () => {
         const [item] = parseItems([{ ...mockItem, title: '   title1 ' }]);
         assert.equal(item.text, 'title1');
     });
+
+    it('should truncate post text', () => {
+        const items = [
+            { ...mockItem, title: `${'text '.repeat(60)} over limit` },
+        ];
+        const [item] = parseItems(items);
+        assert.ok(item.text.length <= 300);
+        assert.equal(item.text, `${'text '.repeat(59).trim()}...`);
+    });
 });
 
 describe('parseTikTokItems', () => {
@@ -149,4 +158,6 @@ describe('parseNewsItems', () => {
         assert.equal(result[1].text, 'A post - XYZ');
         assert.equal(result[2].text, 'A post w/ Polygon - Polygon (@polygon.com)');
     });
+
+
 });
