@@ -116,6 +116,7 @@ describe('parseNewsItems', () => {
             { ...mockItem, title: 'A post - MSN' },
             { ...mockItem, title: 'A post - Yahoo Entertainment' },
             { ...mockItem, title: 'This is likely not a post about critical role' },
+            { ...mockItem, title: 'Something played a Critical Role in something random' }
         ]);
         assert.equal(result.length, 0);
     });

@@ -71,9 +71,16 @@ const newsSourcesRegex = new RegExp(
 export const parseNewsItems = async (items: SuperfeedrItem[]): Promise<PostPayload[]> => {
     // filter items published less than 2 days ago and not in blacklist
     const filteredItems = items.filter(
-        ({ published, title }) =>
-            getDifference(new Date(published * 1000)) >= -48 &&
-            !newsBlacklist.some((blacklist) => title.includes(blacklist)),
+        ({ published, title }) => {
+            const isRecent = getDifference(new Date(published * 1000)) >= -48;
+            const isBlacklisted = newsBlacklist.some((expression) => {
+                if (expression instanceof RegExp) {
+                    return expression.test(title);
+                }
+                return title.includes(expression);
+            });
+            return isRecent && !isBlacklisted;
+        },
     );
 
     const decodedUrls = await Promise.all(
