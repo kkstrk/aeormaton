@@ -1,3 +1,4 @@
+import { convert } from 'html-to-text';
 import type { PostPayload } from '@skyware/bot';
 
 import type { SuperfeedrItem } from '../types';
@@ -10,7 +11,7 @@ const parseText = (text: string, limit = 300) => {
     if (trimmedText.length <= limit) {
         return trimmedText;
     }
-    const words = trimmedText.split(/\s+/u);
+    const words = trimmedText.split(' ');
     while ((words.join(' ').length + 3) > limit) {
         words.pop();
     }
@@ -110,5 +111,64 @@ export const parseNewsItems = async (items: SuperfeedrItem[]): Promise<PostPaylo
             external: decodedUrls[index],
             text,
         };
+    });
+};
+
+const videoRegex = /\[video:(?<url>[^\]]+)\]/gmui;
+const imageRegex = /\[img:(?<url>[^\]]+)\]/gmui;
+const twitterMembersRegex = new RegExp(
+    crMembers
+        .map(({ name, twitter = name }) => twitter.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'))
+        .join('|'),
+    'gu',
+);
+
+export const parseTwitterItems = (items: SuperfeedrItem[]): PostPayload[] => {
+    // filter items that are retweets and replies
+    const filteredItems = items.filter(({ title }) => !/^(?:RT\s|Re\s)/gu.test(title));
+    return filteredItems.map((item) => {
+        let text = convert(
+            item.summary,
+            {
+                wordwrap: false,
+                preserveNewlines: true,
+                selectors: [{
+                    selector: 'img',
+                    format: 'image',
+                    options: { baseUrl: null, linkBrackets: ['[img:', ']'] }
+                }, {
+                    selector: 'video',
+                    format: 'image',
+                    options: { baseUrl: null, linkBrackets: ['[video:', ']'] }
+                }],
+            }
+        );
+
+        const [, videoUrl] = videoRegex.exec(text) || [];
+        if (videoUrl) {
+            text = text.replaceAll(videoRegex, '');
+        }
+
+        let images;
+        const imageMatches = [...text.matchAll(imageRegex)].slice(0, 4);
+        if (imageMatches.length) {
+            text = text.replaceAll(imageRegex, '');
+            images = imageMatches.map(([, url]) => ({ data: url }));
+        }
+
+        // replace Twitter handles with Bluesky handles
+        text = text.replace(twitterMembersRegex, (match) => {
+            const member = crMembers.find(({ name, twitter = name }) => twitter === match);
+            return member.bsky || member.name;
+        });
+
+        text = `[Twitter] ${text}`.replace(/\n+$/gui, '');
+        text = parseText(text);
+
+        return {
+            text,
+            ...(videoUrl ? { video: { data: videoUrl }} : {}),
+            ...((!videoUrl && images) ? { images } : {}),
+        }
     });
 };

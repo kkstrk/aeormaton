@@ -21,6 +21,7 @@ Posts an update any time new content is updated on any of the following platform
 - [critrole.com](https://critrole.com)
 - [YouTube](https://www.youtube.com/@criticalrole)
 - [TikTok](https://www.tiktok.com/@criticalrole)
+- [Twitter](https://twitter.com/CriticalRole)
 - [Google News](https://news.google.com/topics/CAAqKAgKIiJDQkFTRXdvTkwyY3ZNVEZqYkdkb2FuSXdlUklDWlc0b0FBUAE?ceid=US:en&oc=3)
 
 ### Commands
