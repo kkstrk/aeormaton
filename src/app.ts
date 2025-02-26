@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import type { PostPayload } from '@skyware/bot';
 
-import { bot } from './bot/bot';
+import bot from './bot/bot';
 import { parseItems, parseNewsItems, parseTikTokItems, parseTwitterItems } from './utils/parsers';
 import type { SuperfeedrItem } from './types';
 
@@ -16,7 +16,7 @@ app.use(express.text({ type: 'text/html' }));
 
 // healthcheck endpoint
 app.get('/', (_req, res) => {
-    res.status(200).send({ bot: bot.hasSession, status: 'ok' });
+    res.status(200).send({ bot: bot.session, status: 'ok' });
 });
 
 // eslint-disable-next-line new-cap
@@ -30,9 +30,7 @@ const useEndpoint = (endpoint: string, parser: (items: SuperfeedrItem[]) => Post
             const posts = await parser(req.body.items);
             if (posts.length) {
                 for (const post of posts) {
-                    console.log(`Posting ${JSON.stringify(post)}.`);
                     await bot.post(post);
-                    console.log('Successfully posted to Bluesky.');
                 }
             } else {
                 console.log('There are no new updates to post.');
