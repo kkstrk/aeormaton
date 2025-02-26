@@ -76,7 +76,7 @@ describe('parseTikTokItems', () => {
     it('should replace mentions in post text', () => {
         const result = parseTikTokItems([
             { ...mockItem, title: 'Replaces @LauraBaileyVO w/ @laurabaileyvo.bsky.social.' },
-            { ...mockItem, title: 'Replaces @Marisha Ray641 w/ Marisha Ray.' },
+            { ...mockItem, title: 'Replaces (@Marisha Ray641) w/ Marisha Ray.' },
             {
                 ...mockItem,
                 title: 'Replaces Brennan Lee Mulligan w/ @brennanleemulligan.bsky.social.',
@@ -86,7 +86,7 @@ describe('parseTikTokItems', () => {
             result[0].text,
             'Replaces @laurabaileyvo.bsky.social w/ @laurabaileyvo.bsky.social.',
         );
-        assert.equal(result[1].text, 'Replaces Marisha Ray w/ Marisha Ray.');
+        assert.equal(result[1].text, 'Replaces (Marisha Ray) w/ Marisha Ray.');
         assert.equal(
             result[2].text,
             'Replaces @brennanleemulligan.bsky.social w/ @brennanleemulligan.bsky.social.',
