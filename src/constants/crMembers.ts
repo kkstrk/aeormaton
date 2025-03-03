@@ -33,6 +33,10 @@ const crMembers = [
         twitter: '@samriegel',
     },
     {
+        name: 'Taliesin Jaffe',
+        twitter: '@executivegoth',
+    },
+    {
         name: 'Travis Willingham',
         tiktok: '@WillingBlam',
         twitter: '@WillingBlam',
