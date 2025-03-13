@@ -130,9 +130,12 @@ describe('parseNewsItems', () => {
         const result = await parseNewsItems([
             { ...mockItem, title: 'A post w/ Critical Role' },
             { ...mockItem, title: 'A post w/ Critical Role. Also, Critical Role' },
+            { ...mockItem, title: 'A post w/ Critical Role\'s founders' },
+
         ]);
         assert.equal(result[0].text, 'A post w/ #CriticalRole');
         assert.equal(result[1].text, 'A post w/ #CriticalRole. Also, Critical Role');
+        assert.equal(result[2].text, 'A post w/ #CriticalRole founders');
     });
 
     it('should add bsky handles for CR members', async () => {

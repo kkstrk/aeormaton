@@ -102,7 +102,7 @@ export const parseNewsItems = async (items: SuperfeedrItem[]): Promise<PostPaylo
     );
 
     return filteredItems.map((item, index) => {
-        let text = item.title.replace('Critical Role', '#CriticalRole');
+        let text = item.title.replace(/Critical Role(?:[’'‘`´]s)?/u, '#CriticalRole');
         text = parseMembers(text, ({ name, bsky }) => bsky ? `${name} (${bsky})` : name);
         text = text.replace(newsSourcesRegex, (match) => `${match} (${newsSources[match]})`);
         text = parseText(text);
