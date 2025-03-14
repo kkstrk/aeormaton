@@ -22,7 +22,12 @@ app.get('/', (_req, res) => {
 // eslint-disable-next-line new-cap
 const api = express.Router();
 
-const useEndpoint = (endpoint: string, parser: (items: SuperfeedrItem[]) => PostPayload[] | Promise<PostPayload[]>) => {
+const useEndpoint = (
+    endpoint: string,
+    parser: (
+        items: SuperfeedrItem[],
+    ) => (PostPayload | PostPayload[])[] | Promise<(PostPayload | PostPayload[])[]>,
+) => {
     api.post(endpoint, async (req, res) => {
         console.log(`POST at ${endpoint} with body:`);
         console.log(req.body);
@@ -30,7 +35,11 @@ const useEndpoint = (endpoint: string, parser: (items: SuperfeedrItem[]) => Post
             const posts = await parser(req.body.items);
             if (posts.length) {
                 for (const post of posts) {
-                    await bot.post(post);
+                    if (Array.isArray(post)) {
+                        await bot.postThread(post);
+                    } else {
+                        await bot.post(post);
+                    }
                 }
             } else {
                 console.log('There are no new updates to post.');

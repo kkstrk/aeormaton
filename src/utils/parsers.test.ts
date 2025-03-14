@@ -1,12 +1,7 @@
 import assert from 'assert/strict';
 import { describe, it } from 'node:test';
 
-import {
-    parseItems,
-    parseNewsItems,
-    parseTikTokItems,
-    parseTwitterItems,
-} from './parsers';
+import { parseItems, parseNewsItems, parseTikTokItems, parseTwitterItems } from './parsers';
 
 const mockItem = {
     permalinkUrl: 'url',
@@ -35,9 +30,7 @@ describe('parseItems', () => {
     });
 
     it('should truncate post text', () => {
-        const items = [
-            { ...mockItem, title: `${'text '.repeat(60)} over limit` },
-        ];
+        const items = [{ ...mockItem, title: `${'text '.repeat(60)} over limit` }];
         const [item] = parseItems(items);
         assert.ok(item.text.length <= 300);
         assert.equal(item.text, `${'text '.repeat(59).trim()}...`);
@@ -121,7 +114,7 @@ describe('parseNewsItems', () => {
             { ...mockItem, title: 'A post - MSN' },
             { ...mockItem, title: 'A post - Yahoo Entertainment' },
             { ...mockItem, title: 'This is likely not a post about critical role' },
-            { ...mockItem, title: 'Something played a Critical Role in something random' }
+            { ...mockItem, title: 'Something played a Critical Role in something random' },
         ]);
         assert.equal(result.length, 0);
     });
@@ -130,8 +123,7 @@ describe('parseNewsItems', () => {
         const result = await parseNewsItems([
             { ...mockItem, title: 'A post w/ Critical Role' },
             { ...mockItem, title: 'A post w/ Critical Role. Also, Critical Role' },
-            { ...mockItem, title: 'A post w/ Critical Role\'s founders' },
-
+            { ...mockItem, title: "A post w/ Critical Role's founders" },
         ]);
         assert.equal(result[0].text, 'A post w/ #CriticalRole');
         assert.equal(result[1].text, 'A post w/ #CriticalRole. Also, Critical Role');
@@ -170,10 +162,13 @@ describe('parseNewsItems', () => {
 });
 
 describe('parseTwitterItems', () => {
-    const tweetWithImage = 'Hey @BalatroGame Vox Machina has joined the party!<br><br>Critical Role has come to Balatro in the free Friends of Jimbo update—add Scanlan, Vex, and Percy to your next run!<br><img width="2048" height="1152" style="" src="https://pbs.twimg.com/media/Gklf0m5WwAAMFDR?format=jpg&amp;name=orig" referrerpolicy="no-referrer">';
-    const tweetWithImages = 'MEET THE HEROES OF #EXUDivergence 🔀🌱<br><br>A healer working to keep those around her alive in the wake of the war of the Gods, Rei\'nia Saph is played by Celia Rose Gooding! ⚕️✨<br><br>[ Art by @agarthanguide ] <br><br>#CriticalRoleSpoilers<br><img width="1542" height="2000" style="" src="https://pbs.twimg.com/media/GkSKkTuW0AEm_8J?format=jpg&amp;name=orig" referrerpolicy="no-referrer"><img width="1542" height="2000" style="" src="https://pbs.twimg.com/media/GkSLtf-X0AAGtdq?format=jpg&amp;name=orig" referrerpolicy="no-referrer">';
-    const tweetWithVideo = 'Everyone, Stay Calm! 🐴<br><br>Our misfit mercenaries find the Elk Eidolon and more in Season 2, Episode 18 of #TheReSlayersTake - now available on YouTube and wherever your favorite podcasts are found! You don’t want to miss the first part of this EPIC finale 🔥<br><br>JOIN UP WITH THE RE-SLAYERS ⬇️<br>▶️ https://bit.ly/41hr2Ye<br>🔮 https://bit.ly/4gzbGo4<br>🍏 https://apple.co/4fl85sH<br>🔊 https://spoti.fi/3DlScVJ<br><video width="1920" height="1080" src="https://video.twimg.com/amplify_video/1894100609386635264/vid/avc1/1920x1080/l4bUCIOUmua_ZMjQ.mp4?tag=16" controls="controls" poster="https://pbs.twimg.com/media/GkkyhqNXgAArXS6?format=jpg&amp;name=orig"></video>';
-    
+    const tweetWithImage =
+        'Hey @BalatroGame Vox Machina has joined the party!<br><br>Critical Role has come to Balatro in the free Friends of Jimbo update—add Scanlan, Vex, and Percy to your next run!<br><img width="2048" height="1152" style="" src="https://pbs.twimg.com/media/Gklf0m5WwAAMFDR?format=jpg&amp;name=orig" referrerpolicy="no-referrer">';
+    const tweetWithImages =
+        'MEET THE HEROES OF #EXUDivergence 🔀🌱<br><br>A healer working to keep those around her alive in the wake of the war of the Gods, Rei\'nia Saph is played by Celia Rose Gooding! ⚕️✨<br><br>[ Art by @agarthanguide ] <br><br>#CriticalRoleSpoilers<br><img width="1542" height="2000" style="" src="https://pbs.twimg.com/media/GkSKkTuW0AEm_8J?format=jpg&amp;name=orig" referrerpolicy="no-referrer"><img width="1542" height="2000" style="" src="https://pbs.twimg.com/media/GkSLtf-X0AAGtdq?format=jpg&amp;name=orig" referrerpolicy="no-referrer">';
+    const tweetWithVideo =
+        'Everyone, Stay Calm! 🐴<br><br>Our misfit mercenaries find the Elk Eidolon and more in Season 2, Episode 18 of #TheReSlayersTake - now available on YouTube and wherever your favorite podcasts are found! You don’t want to miss the first part of this EPIC finale 🔥<br><br>JOIN UP WITH THE RE-SLAYERS ⬇️<br>▶️ https://bit.ly/41hr2Ye<br>🔮 https://bit.ly/4gzbGo4<br>🍏 https://apple.co/4fl85sH<br>🔊 https://spoti.fi/3DlScVJ<br><video width="1920" height="1080" src="https://video.twimg.com/amplify_video/1894100609386635264/vid/avc1/1920x1080/l4bUCIOUmua_ZMjQ.mp4?tag=16" controls="controls" poster="https://pbs.twimg.com/media/GkkyhqNXgAArXS6?format=jpg&amp;name=orig"></video>';
+
     it('should return an array of posts', () => {
         const items = [
             { ...mockItem, summary: tweetWithImage },
@@ -183,32 +178,55 @@ describe('parseTwitterItems', () => {
         const result = parseTwitterItems(items);
 
         assert.equal(result.length, items.length);
+        assert.ok(!Array.isArray(result[0]));
         assert.equal(
             result[0].text,
-            '[Twitter] Hey @BalatroGame Vox Machina has joined the party!\n\n'
-            + 'Critical Role has come to Balatro in the free Friends of Jimbo update—add Scanlan, Vex, and Percy to your next run!'
+            '[Twitter] Hey @BalatroGame Vox Machina has joined the party!\n\n' +
+                'Critical Role has come to Balatro in the free Friends of Jimbo update—add Scanlan, Vex, and Percy to your next run!',
         );
         assert.equal(result[0].images.length, 1);
-        assert.equal(result[0].images[0].data, 'https://pbs.twimg.com/media/Gklf0m5WwAAMFDR?format=jpg&name=orig');
+        assert.equal(
+            result[0].images[0].data,
+            'https://pbs.twimg.com/media/Gklf0m5WwAAMFDR?format=jpg&name=orig',
+        );
 
+        assert.ok(!Array.isArray(result[1]));
         assert.equal(
             result[1].text,
-            '[Twitter] MEET THE HEROES OF #EXUDivergence 🔀🌱\n\n'
-            + 'A healer working to keep those around her alive in the wake of the war of the Gods, Rei\'nia Saph is played by Celia Rose Gooding! ⚕️✨\n\n'
-            + '[ Art by @agarthanguide ]\n\n'
-            + '#CriticalRoleSpoilers'
+            '[Twitter] MEET THE HEROES OF #EXUDivergence 🔀🌱\n\n' +
+                "A healer working to keep those around her alive in the wake of the war of the Gods, Rei'nia Saph is played by Celia Rose Gooding! ⚕️✨\n\n" +
+                '[ Art by @agarthanguide ]\n\n' +
+                '#CriticalRoleSpoilers',
         );
         assert.equal(result[1].images.length, 2);
-        assert.equal(result[1].images[0].data, 'https://pbs.twimg.com/media/GkSKkTuW0AEm_8J?format=jpg&name=orig');
-        assert.equal(result[1].images[1].data, 'https://pbs.twimg.com/media/GkSLtf-X0AAGtdq?format=jpg&name=orig');
-
         assert.equal(
-            result[2].text,
-            '[Twitter] Everyone, Stay Calm! 🐴\n\n'
-            + 'Our misfit mercenaries find the Elk Eidolon and more in Season 2, Episode 18 of #TheReSlayersTake - now available on YouTube and wherever your favorite podcasts are found! You don’t want to miss the first part of this EPIC finale 🔥\n\n'
-            + 'JOIN UP WITH THE RE-SLAYERS...'
+            result[1].images[0].data,
+            'https://pbs.twimg.com/media/GkSKkTuW0AEm_8J?format=jpg&name=orig',
         );
-        assert.equal(result[2].video.data, 'https://video.twimg.com/amplify_video/1894100609386635264/vid/avc1/1920x1080/l4bUCIOUmua_ZMjQ.mp4?tag=16');
+        assert.equal(
+            result[1].images[1].data,
+            'https://pbs.twimg.com/media/GkSLtf-X0AAGtdq?format=jpg&name=orig',
+        );
+
+        assert.ok(Array.isArray(result[2]));
+        assert.equal(
+            result[2][0].text,
+            '[Twitter] Everyone, Stay Calm! 🐴\n\n' +
+                'Our misfit mercenaries find the Elk Eidolon and more in Season 2, Episode 18 of #TheReSlayersTake - now available on YouTube and wherever your favorite podcasts are found! You don’t want to miss the first part of this EPIC finale 🔥\n\n' +
+                'JOIN UP WITH THE RE-SLAYERS',
+        );
+        assert.equal(
+            result[2][0].video.data,
+            'https://video.twimg.com/amplify_video/1894100609386635264/vid/avc1/1920x1080/l4bUCIOUmua_ZMjQ.mp4?tag=16',
+        );
+        assert.equal(
+            result[2][1].text,
+            '⬇️\n' +
+                '▶️ https://bit.ly/41hr2Ye\n' +
+                '🔮 https://bit.ly/4gzbGo4\n' +
+                '🍏 https://apple.co/4fl85sH\n' +
+                '🔊 https://spoti.fi/3DlScVJ',
+        );
     });
 
     it('should exclude retweets and replies', () => {
@@ -228,11 +246,17 @@ describe('parseTwitterItems', () => {
                 summary: 'Replaces Brennan Lee Mulligan w/ @brennanleemulligan.bsky.social.',
             },
         ]);
+
+        assert.ok(!Array.isArray(result[0]));
         assert.equal(
             result[0].text,
             '[Twitter] Replaces @laurabaileyvo.bsky.social w/ @laurabaileyvo.bsky.social.',
         );
+
+        assert.ok(!Array.isArray(result[1]));
         assert.equal(result[1].text, '[Twitter] Replaces Marisha Ray w/ Marisha Ray.');
+
+        assert.ok(!Array.isArray(result[2]));
         assert.equal(
             result[2].text,
             '[Twitter] Replaces @brennanleemulligan.bsky.social w/ @brennanleemulligan.bsky.social.',
