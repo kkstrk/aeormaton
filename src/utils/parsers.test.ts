@@ -134,18 +134,18 @@ describe('parseNewsItems', () => {
         const result = await parseNewsItems([
             { ...mockItem, title: 'A post w/ Marisha Ray' },
             { ...mockItem, title: 'A post w/ Laura Bailey' },
-            { ...mockItem, title: 'A post w/ Matthew Mercer and Matthew Mercer' },
-            { ...mockItem, title: 'A post w/ Laura Bailey and Matthew Mercer' },
+            { ...mockItem, title: 'A post w/ Matthew Mercer and Matthew Mercer and Matt Mercer' },
+            { ...mockItem, title: 'A post w/ Laura Bailey and Matt Mercer' },
         ]);
         assert.equal(result[0].text, 'A post w/ Marisha Ray');
         assert.equal(result[1].text, 'A post w/ Laura Bailey (@laurabaileyvo.bsky.social)');
         assert.equal(
             result[2].text,
-            'A post w/ Matthew Mercer (@matthewmercer.bsky.social) and Matthew Mercer',
+            'A post w/ Matthew Mercer (@matthewmercer.bsky.social) and Matthew Mercer and Matt Mercer',
         );
         assert.equal(
             result[3].text,
-            'A post w/ Laura Bailey (@laurabaileyvo.bsky.social) and Matthew Mercer (@matthewmercer.bsky.social)',
+            'A post w/ Laura Bailey (@laurabaileyvo.bsky.social) and Matt Mercer (@matthewmercer.bsky.social)',
         );
     });
 

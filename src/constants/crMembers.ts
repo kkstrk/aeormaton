@@ -27,6 +27,10 @@ const crMembers = [
         twitter: '@matthewmercer',
     },
     {
+        bsky: '@matthewmercer.bsky.social',
+        name: 'Matt Mercer',
+    },
+    {
         bsky: '@samriegel.bsky.social',
         name: 'Sam Riegel',
         tiktok: '@SamRiegel',

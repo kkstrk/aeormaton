@@ -36,8 +36,9 @@ const parseMembers = (text: string, replace = ({ name, bsky = name }): string =>
                 matchValue === tiktok?.toLowerCase() ||
                 matchValue === twitter?.toLowerCase(),
         );
-        if (!replacedMembers.has(member.name)) {
-            replacedMembers.add(member.name);
+        const key = member.bsky || member.name;
+        if (!replacedMembers.has(key)) {
+            replacedMembers.add(key);
             return replace(member);
         }
         return member.name;
