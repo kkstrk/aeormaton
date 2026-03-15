@@ -1,9 +1,11 @@
-import { Bot, type PostPayload } from '@skyware/bot';
+import { Bot } from "@skyware/bot";
 
-import { useEnv } from '../utils/useEnv';
-import { login } from './login';
-import { handleCommands } from './commands';
-import BotPosts from './posts';
+import { requiredEnv, useEnv } from "../utils/useEnv.js";
+import { login } from "./login.js";
+import { handleCommands } from "./commands.js";
+import BotPosts from "./posts.js";
+
+import type { PostPayload } from "@skyware/bot";
 
 useEnv();
 
@@ -12,27 +14,22 @@ const session = login(bot);
 
 const botPosts = new BotPosts();
 
-(async () => {
-    // login to bsky
-    await session;
-    console.log('Has session: ', bot.hasSession);
+await session;
+console.log("Has session: ", bot.hasSession);
 
-    // fetch posts
-    try {
-        const { posts } = await bot.getUserPosts(
-            process.env.BSKY_DID,
-            { filter: 'posts_and_author_threads' }
-        );
-        posts.forEach((post) => botPosts.add(post));
-        console.log('Successfully fetched posts.');
-    } catch (error) {
-        console.error('Could not fetch bot posts.', error);
-    }
-})();
+try {
+    const { posts } = await bot.getUserPosts(requiredEnv("BSKY_DID"), {
+        filter: "posts_and_author_threads",
+    });
+    posts.forEach((post) => botPosts.add(post));
+    console.log("Successfully fetched posts.");
+} catch (error) {
+    console.error("Could not fetch bot posts.", error);
+}
 
 // listen to events
-bot.on('reply', handleCommands);
-bot.on('mention', handleCommands);
+bot.on("reply", handleCommands);
+bot.on("mention", handleCommands);
 
 export default {
     session,
@@ -44,11 +41,14 @@ export default {
             console.log(`Posting ${JSON.stringify(post)}.`);
             await bot.post(post);
             botPosts.add(post);
-            console.log('Successfully posted to Bluesky.');
+            console.log("Successfully posted to Bluesky.");
         }
     },
     postThread: async (posts: PostPayload[]) => {
         const [post, ...replies] = posts;
+        if (!post) {
+            return;
+        }
         if (botPosts.has(post)) {
             console.log(`Skipping thread ${JSON.stringify(post)} because it is a duplicate.`);
         } else {
@@ -56,7 +56,7 @@ export default {
             console.log(`Posting thread with ${replies.length} replies.`);
             const { uri, cid } = await bot.post(post);
             botPosts.add(post);
-            console.log('Successfully posted first post to Bluesky.');
+            console.log("Successfully posted first post to Bluesky.");
 
             const root = { uri, cid };
             const parent = { uri, cid };

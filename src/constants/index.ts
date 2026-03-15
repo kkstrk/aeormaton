@@ -1,3 +1,3 @@
-export { default as crMembers } from './crMembers';
-export { default as newsBlacklist } from './newsBlacklist';
-export { default as newsSources } from './newsSources';
+export { default as crMembers } from "./crMembers.js";
+export { default as newsBlacklist } from "./newsBlacklist.js";
+export { default as newsSources } from "./newsSources.js";

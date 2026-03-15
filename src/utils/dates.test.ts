@@ -1,23 +1,23 @@
-import assert from 'assert/strict';
-import { describe, it } from 'node:test';
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
 
-import { getDifference, isToday } from './dates';
+import { getDifference, isToday } from "./dates.js";
 
-describe('isToday', () => {
-    it('should return true if the date is today', () => {
+describe("isToday", () => {
+    it("should return true if the date is today", () => {
         const date = new Date();
-        assert(isToday(date));
+        assert.ok(isToday(date));
     });
 
-    it('should return false if the date is not today', () => {
+    it("should return false if the date is not today", () => {
         const date = new Date();
         date.setDate(date.getDate() + 1);
-        assert(!isToday(date));
+        assert.ok(!isToday(date));
     });
 });
 
-describe('getDifference', () => {
-    it('should return the difference in hours', () => {
+describe("getDifference", () => {
+    it("should return the difference in hours", () => {
         const tomorrow = new Date();
         tomorrow.setHours(tomorrow.getHours() + 13);
         assert.equal(getDifference(tomorrow), 13);

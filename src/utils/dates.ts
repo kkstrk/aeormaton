@@ -4,7 +4,7 @@ export const isToday = (date: Date) => {
 };
 
 export const getRemainingTime = (date: Date) => {
-    const total = +date - +new Date();
+    const total = +date - Date.now();
 
     const days = Math.floor(total / (1000 * 60 * 60 * 24));
     const hours = Math.floor((total % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -13,4 +13,4 @@ export const getRemainingTime = (date: Date) => {
     return `${days} days, ${hours} hours and ${minutes} minutes`;
 };
 
-export const getDifference = (date: Date) => Math.ceil((+date - +new Date()) / 1000 / 60 / 60);
+export const getDifference = (date: Date) => Math.ceil((+date - Date.now()) / 1000 / 60 / 60);

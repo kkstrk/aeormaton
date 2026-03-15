@@ -1,16 +1,17 @@
-import { convert } from 'html-to-text';
-import type { PostPayload } from '@skyware/bot';
+import { convert } from "html-to-text";
 
-import type { SuperfeedrItem } from '../types';
-import { crMembers, newsBlacklist, newsSources } from '../constants';
-import { getDifference } from './dates';
-import decodeGoogleNewsUrl from './decodeGoogleNewsUrl';
+import { crMembers, newsBlacklist, newsSources } from "../constants/index.js";
+import { getDifference } from "./dates.js";
+import decodeGoogleNewsUrl from "./decodeGoogleNewsUrl.js";
+
+import type { PostPayload } from "@skyware/bot";
+import type { SuperfeedrItem } from "../types/index.js";
 
 const newsSourcesRegex = new RegExp(
     `(${Object.keys(newsSources)
-        .map((handle) => handle.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'))
-        .join('|')})$`,
-    'u',
+        .map((handle) => handle.replaceAll(/[.*+?^${}()|[\]\\]/gu, "\\$&"))
+        .join("|")})$`,
+    "u",
 );
 
 // /(?:@Marisha Ray641|@Marisha_Ray|...)(?!\.\w)|(?:Marisha Ray|...)/gmiu
@@ -19,14 +20,17 @@ const crMembersRegex = new RegExp(
         .flatMap(({ tiktok, twitter }) =>
             [tiktok, twitter]
                 .filter(Boolean)
-                .map((str) => str.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')),
+                .map((str) => str?.replaceAll(/[.*+?^${}()|[\]\\]/gu, "\\$&")),
         )
-        .join('|')})(?!\\.\\w)|(?:${crMembers
-        .map(({ name }) => name.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'))
-        .join('|')})`,
-    'gmiu',
+        .join("|")})(?!\\.\\w)|(?:${crMembers
+        .map(({ name }) => name.replaceAll(/[.*+?^${}()|[\]\\]/gu, "\\$&"))
+        .join("|")})`,
+    "gmiu",
 );
-const parseMembers = (text: string, replace = ({ name, bsky = name }): string => bsky) => {
+const parseMembers = (
+    text: string,
+    replace = ({ name, bsky = name }: { name: string; bsky?: string }): string => bsky,
+) => {
     const replacedMembers = new Set<string>();
     return text.replace(crMembersRegex, (match) => {
         const matchValue = match.toLowerCase();
@@ -36,7 +40,10 @@ const parseMembers = (text: string, replace = ({ name, bsky = name }): string =>
                 matchValue === tiktok?.toLowerCase() ||
                 matchValue === twitter?.toLowerCase(),
         );
-        const key = member.bsky || member.name;
+        if (!member) {
+            return match;
+        }
+        const key = member.bsky ?? member.name;
         if (!replacedMembers.has(key)) {
             replacedMembers.add(key);
             return replace(member);
@@ -53,11 +60,11 @@ const parseText = (text: string) => {
     if (trimmedText.length <= limit) {
         return trimmedText;
     }
-    const words = trimmedText.split(' ');
-    while (words.join(' ').length + 3 > limit) {
+    const words = trimmedText.split(" ");
+    while (words.join(" ").length + 3 > limit) {
         words.pop();
     }
-    return `${words.join(' ')}...`;
+    return `${words.join(" ")}...`;
 };
 
 const splitText = (text: string): string[] => {
@@ -65,10 +72,10 @@ const splitText = (text: string): string[] => {
     if (trimmedText.length <= limit) {
         return [trimmedText];
     }
-    const words = trimmedText.split(' ');
+    const words = trimmedText.split(" ");
     return words.reduce(
         (parts, word) => {
-            const part = parts[parts.length - 1];
+            const part = parts.at(-1);
             const extendedPart = part ? `${part} ${word}` : word;
             if (extendedPart.length <= limit) {
                 parts[parts.length - 1] = extendedPart;
@@ -77,7 +84,7 @@ const splitText = (text: string): string[] => {
             }
             return parts;
         },
-        [''],
+        [""],
     );
 };
 
@@ -90,7 +97,7 @@ export const parseItems = (items: SuperfeedrItem[]): PostPayload[] =>
 export const parseTikTokItems = (items: SuperfeedrItem[]): PostPayload[] =>
     items.map((item) => {
         // remove mentions and hashtags at the end of the string
-        let text = item.title.replace(/[@#][\s@#\w'`’]*$/u, '');
+        let text = item.title.replace(/[@#][\s@#\w'`’]*$/u, "");
         text = parseMembers(text);
         text = parseText(text);
 
@@ -98,7 +105,7 @@ export const parseTikTokItems = (items: SuperfeedrItem[]): PostPayload[] =>
 
         return {
             external: {
-                description: 'TikTok video by Critical Role',
+                description: "TikTok video by Critical Role",
                 title: text,
                 uri: item.permalinkUrl,
                 ...(thumbnailUrl ? { thumb: { data: thumbnailUrl } } : {}),
@@ -124,9 +131,12 @@ export const parseNewsItems = async (items: SuperfeedrItem[]): Promise<PostPaylo
     );
 
     return filteredItems.map((item, index) => {
-        let text = item.title.replace(/Critical Role(?:[’'‘`´]s)?/u, '#CriticalRole');
+        let text = item.title.replace(/Critical Role(?:[’'‘`´]s)?/u, "#CriticalRole");
         text = parseMembers(text, ({ name, bsky }) => (bsky ? `${name} (${bsky})` : name));
-        text = text.replace(newsSourcesRegex, (match) => `${match} (${newsSources[match]})`);
+        text = text.replace(
+            newsSourcesRegex,
+            (match) => `${match} (${newsSources[match as keyof typeof newsSources]})`,
+        );
         text = parseText(text);
 
         return {
@@ -151,41 +161,41 @@ export const parseTwitterItems = (items: SuperfeedrItem[]): (PostPayload | PostP
             preserveNewlines: true,
             selectors: [
                 {
-                    selector: 'img',
-                    format: 'image',
-                    options: { baseUrl: null, linkBrackets: ['[img:', ']'] },
+                    selector: "img",
+                    format: "image",
+                    options: { linkBrackets: ["[img:", "]"] },
                 },
                 {
-                    selector: 'video',
-                    format: 'image',
-                    options: { baseUrl: null, linkBrackets: ['[video:', ']'] },
+                    selector: "video",
+                    format: "image",
+                    options: { linkBrackets: ["[video:", "]"] },
                 },
             ],
         });
 
         const [, videoUrl] = videoRegex.exec(text) || [];
         if (videoUrl) {
-            text = text.replaceAll(videoRegex, '');
+            text = text.replaceAll(videoRegex, "");
         }
 
-        let images;
+        let images: PostPayload["images"] | undefined;
         const imageMatches = [...text.matchAll(imageRegex)].slice(0, 4);
-        if (imageMatches.length) {
-            text = text.replaceAll(imageRegex, '');
-            images = imageMatches.map(([, url]) => ({ data: url }));
+        if (imageMatches.length > 0) {
+            text = text.replaceAll(imageRegex, "");
+            images = imageMatches.map(([, url]) => ({ data: url })) as PostPayload["images"];
         }
 
-        text = `[Twitter] ${text}`.replace(/\n+$/giu, '');
+        text = `[Twitter] ${text}`.replaceAll(/\n+$/giu, "");
         text = parseMembers(text);
         const [postText, ...repliesText] = splitText(text);
 
         const post = {
-            text: postText,
+            text: postText ?? "",
             ...(videoUrl ? { video: { data: videoUrl } } : {}),
             ...(!videoUrl && images ? { images } : {}),
         };
 
-        if (repliesText.length) {
+        if (repliesText.length > 0) {
             return [post, ...repliesText.map((reply) => ({ text: reply }))];
         }
 

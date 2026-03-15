@@ -1,10 +1,10 @@
-import { config } from 'dotenv';
+import { config } from "dotenv";
 
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== "production") {
     config();
 }
 // call after config() to access the env variables
-import { app } from './app';
+import { app } from "./app.js";
 
 const port = process.env.PORT || 3333;
 

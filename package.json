@@ -1,5 +1,6 @@
 {
     "name": "aeormaton",
+    "type": "module",
     "version": "1.0.0",
     "main": "index.js",
     "license": "MIT",
@@ -8,31 +9,30 @@
         "dev": "tsx watch src/index.ts",
         "build": "tsc",
         "start": "tsx dist/index.js",
-        "lint": "npx eslint . && tsc --noEmit",
-        "prettier": "npx prettier . --write",
-        "test": "tsx --test"
+        "lint": "oxlint .",
+        "format": "oxfmt",
+        "test": "tsx --test",
+        "types": "tsc --noEmit"
     },
     "dependencies": {
-        "@skyware/bot": "^0.3.8",
-        "@twurple/api": "^7.2.1",
-        "@twurple/auth": "^7.2.1",
-        "axios": "^1.7.9",
-        "cheerio": "^1.0.0",
-        "cors": "^2.8.5",
-        "dotenv": "^16.4.7",
-        "express": "^4.21.2",
+        "@skyware/bot": "^0.4.1",
+        "@twurple/api": "^8.0.3",
+        "@twurple/auth": "^8.0.3",
+        "axios": "^1.13.6",
+        "cheerio": "^1.2.0",
+        "cors": "^2.8.6",
+        "dotenv": "^17.3.1",
+        "express": "^5.2.1",
         "html-to-text": "^9.0.5"
     },
     "devDependencies": {
-        "@eslint/js": "^9.21.0",
-        "@types/cors": "^2.8.17",
-        "@types/express": "^5.0.0",
+        "@types/cors": "^2.8.19",
+        "@types/express": "^5.0.6",
         "@types/html-to-text": "^9.0.4",
-        "@types/node": "^22.13.5",
-        "eslint": "^9.21.0",
-        "prettier": "3.5.2",
-        "tsx": "^4.19.3",
-        "typescript": "^5.7.3",
-        "typescript-eslint": "^8.25.0"
+        "@types/node": "^25.5.0",
+        "oxfmt": "^0.40.0",
+        "oxlint": "^1.55.0",
+        "tsx": "^4.21.0",
+        "typescript": "^5.9.3"
     }
 }

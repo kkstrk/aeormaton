@@ -1,0 +1,15 @@
+{
+    "$schema": "./node_modules/oxfmt/configuration_schema.json",
+    "tabWidth": 4,
+    "sortPackageJson": false,
+    "ignorePatterns": [
+        ".gitkeep",
+        ".env*",
+        "*.ico",
+        "*.lock",
+        "db/migrations",
+        ".yarn",
+        ".pnp*",
+        "node_modules"
+    ]
+}
