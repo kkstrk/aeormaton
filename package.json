@@ -18,7 +18,7 @@
         "@skyware/bot": "^0.4.1",
         "@twurple/api": "^8.0.3",
         "@twurple/auth": "^8.0.3",
-        "axios": "^1.13.6",
+        "axios": "^1.16.0",
         "cheerio": "^1.2.0",
         "cors": "^2.8.6",
         "dotenv": "^17.3.1",
