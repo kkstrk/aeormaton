@@ -6,6 +6,7 @@ import { createApp } from "./app.js";
 import bot from "./bot/bot.js";
 import { createPoller } from "./feeds/poller.js";
 import feedSources from "./feeds/sources.js";
+import { createStreamReminder } from "./twitch/streamReminder.js";
 
 const app = createApp(bot);
 
@@ -16,3 +17,5 @@ serve({ fetch: app.fetch, port }, (info) =>
 );
 
 createPoller(bot, feedSources).start();
+
+createStreamReminder(bot).start();
