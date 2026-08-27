@@ -1,6 +1,8 @@
 import { convert } from "html-to-text";
 
-import { crMembers, newsBlacklist, newsSources } from "../constants/index.js";
+import crMembers from "../constants/crMembers.js";
+import newsBlacklist from "../constants/newsBlacklist.js";
+import newsSources from "../constants/newsSources.js";
 import { getDifference } from "./dates.js";
 import decodeGoogleNewsUrl from "./decodeGoogleNewsUrl.js";
 

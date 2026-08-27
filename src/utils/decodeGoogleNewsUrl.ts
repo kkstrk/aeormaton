@@ -2,7 +2,7 @@
 
 import * as cheerio from "cheerio";
 
-import { userAgent } from "../constants/index.js";
+import userAgent from "../constants/userAgent.js";
 
 const getBase64Str = (sourceUrl: string): string => {
     try {

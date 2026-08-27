@@ -1,6 +1,6 @@
 import * as cheerio from "cheerio";
 
-import { userAgent } from "../constants/index.js";
+import userAgent from "../constants/userAgent.js";
 
 import type { FeedItem } from "../types/index.js";
 
