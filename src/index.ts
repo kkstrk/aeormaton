@@ -9,7 +9,7 @@ import feedSources from "./feeds/sources.js";
 
 const app = createApp(bot);
 
-const port = Number(process.env.PORT) || 3333;
+const port = Number(process.env["PORT"]) || 3333;
 
 serve({ fetch: app.fetch, port }, (info) =>
     console.log(`API available on http://localhost:${info.port}`),
