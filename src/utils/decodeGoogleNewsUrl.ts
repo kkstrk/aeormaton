@@ -1,6 +1,5 @@
 // https://github.com/SSujitX/google-news-url-decoder-nodejs
 
-import axios from "axios";
 import * as cheerio from "cheerio";
 
 const getBase64Str = (sourceUrl: string): string => {
@@ -25,41 +24,37 @@ const getBase64Str = (sourceUrl: string): string => {
     return "";
 };
 
+const fetchDataAttributes = async (
+    url: string,
+): Promise<{ signature: string; timestamp: string }> => {
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`Response status: ${response.status}.`);
+    }
+    const cheerioApi = cheerio.load(await response.text());
+    const dataElement = cheerioApi("c-wiz > div[jscontroller]");
+    if (dataElement.length === 0) {
+        throw new Error(`Failed to fetch data attributes from ${url}.`);
+    }
+    return {
+        signature: dataElement.attr("data-n-a-sg") || "",
+        timestamp: dataElement.attr("data-n-a-ts") || "",
+    };
+};
+
 const getDecodingParams = async (
     base64Str: string,
-): Promise<{ signature?: string; timestamp?: string }> => {
+): Promise<{ signature: string; timestamp: string }> => {
     try {
-        const response = await axios.get(`https://news.google.com/articles/${base64Str}`);
-        const cheerioApi = cheerio.load(response.data);
-        const dataElement = cheerioApi("c-wiz > div[jscontroller]");
-        if (dataElement.length === 0) {
-            throw new Error(
-                "Failed to fetch data attributes from Google News with the articles URL.",
-            );
-        }
-        return {
-            signature: dataElement.attr("data-n-a-sg") || "",
-            timestamp: dataElement.attr("data-n-a-ts") || "",
-        };
+        return await fetchDataAttributes(`https://news.google.com/articles/${base64Str}`);
     } catch {
         try {
-            const response = await axios.get(`https://news.google.com/rss/articles/${base64Str}`);
-            const cheerioApi = cheerio.load(response.data);
-            const dataElement = cheerioApi("c-wiz > div[jscontroller]");
-            if (dataElement.length === 0) {
-                throw new Error(
-                    "Failed to fetch data attributes from Google News with the RSS URL.",
-                );
-            }
-            return {
-                signature: dataElement.attr("data-n-a-sg") || "",
-                timestamp: dataElement.attr("data-n-a-ts") || "",
-            };
+            return await fetchDataAttributes(`https://news.google.com/rss/articles/${base64Str}`);
         } catch (error) {
             console.log("Could not get decoding params from URL.", error);
+            return { signature: "", timestamp: "" };
         }
     }
-    return {};
 };
 
 const decodeUrl = async (
@@ -79,12 +74,20 @@ const decodeUrl = async (
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
         };
 
-        const response = await axios.post(
-            url,
-            `f.req=${encodeURIComponent(JSON.stringify([[payload]]))}`,
-            { headers },
-        );
-        const parsedData = JSON.parse(response.data.split("\n\n")[1]).slice(0, -2);
+        const response = await fetch(url, {
+            body: `f.req=${encodeURIComponent(JSON.stringify([[payload]]))}`,
+            headers,
+            method: "POST",
+        });
+        if (!response.ok) {
+            throw new Error(`Response status: ${response.status}.`);
+        }
+        const text = await response.text();
+        const [, rawPayload] = text.split("\n\n");
+        if (!rawPayload) {
+            throw new Error("Unexpected response format.");
+        }
+        const parsedData = JSON.parse(rawPayload).slice(0, -2);
         const [, decodedUrl] = JSON.parse(parsedData[0][2]);
         return decodedUrl;
     } catch (error) {
@@ -100,12 +103,12 @@ const decodeGoogleNewsUrl = async (sourceUrl: string): Promise<string> => {
             return sourceUrl;
         }
 
-        const { signature, timestamp } = await getDecodingParams(base64Str!);
-        if (!signature && !timestamp) {
+        const { signature, timestamp } = await getDecodingParams(base64Str);
+        if (!signature || !timestamp) {
             return sourceUrl;
         }
 
-        const decodedUrl = await decodeUrl(signature!, timestamp!, base64Str!);
+        const decodedUrl = await decodeUrl(signature, timestamp, base64Str);
         return decodedUrl || sourceUrl;
     } catch (error) {
         console.log("Could not decode Google News URL.", error);
