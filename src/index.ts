@@ -15,6 +15,4 @@ serve({ fetch: app.fetch, port }, (info) =>
     console.log(`API available on http://localhost:${info.port}`),
 );
 
-const POLLING_INTERVAL_MS = 10 * 60 * 1000;
-
-createPoller(bot, feedSources).start(POLLING_INTERVAL_MS);
+createPoller(bot, feedSources).start();

@@ -27,7 +27,7 @@ describe("createPoller", () => {
         const fetchFeed = mock.fn(() => Promise.resolve([item("first", new Date("2026-01-01"))]));
         const source: FeedSource = { name: "blog", parser, url: "https://example.com/feed" };
 
-        await createPoller(bot, [source], fetchFeed).pollOnce();
+        await createPoller(bot, [source], { fetchFeed }).pollOnce();
 
         assert.equal(post.mock.callCount(), 0);
     });
@@ -39,7 +39,7 @@ describe("createPoller", () => {
         let items = [older];
         const fetchFeed = mock.fn(() => Promise.resolve(items));
         const source: FeedSource = { name: "blog", parser, url: "https://example.com/feed" };
-        const poller = createPoller(bot, [source], fetchFeed);
+        const poller = createPoller(bot, [source], { fetchFeed });
 
         await poller.pollOnce();
         items = [older, newer];
@@ -54,7 +54,7 @@ describe("createPoller", () => {
         const single = item("only", new Date("2026-01-01"));
         const fetchFeed = mock.fn(() => Promise.resolve([single]));
         const source: FeedSource = { name: "blog", parser, url: "https://example.com/feed" };
-        const poller = createPoller(bot, [source], fetchFeed);
+        const poller = createPoller(bot, [source], { fetchFeed });
 
         await poller.pollOnce();
         await poller.pollOnce();
@@ -75,9 +75,96 @@ describe("createPoller", () => {
             url.includes("broken") ? failingFetch() : workingFetch(),
         );
 
-        await createPoller(bot, sources, fetchFeed).pollOnce();
+        await createPoller(bot, sources, { fetchFeed }).pollOnce();
 
         assert.equal(workingFetch.mock.callCount(), 1);
         assert.equal(post.mock.callCount(), 0);
+    });
+});
+
+describe("createPoller adaptive interval", () => {
+    it("backs off the interval on each poll that finds nothing new, up to the max", async () => {
+        const { bot } = createStubBot();
+        const fetchFeed = mock.fn(() => Promise.resolve([item("only", new Date("2026-01-01"))]));
+        const source: FeedSource = { name: "blog", parser, url: "https://example.com/feed" };
+        const poller = createPoller(bot, [source], {
+            backoffMultiplier: 2,
+            fetchFeed,
+            maxIntervalMs: 100,
+            minIntervalMs: 10,
+        });
+
+        // baseline poll counts as "nothing new" too: 10 -> 20
+        await poller.pollOnce();
+        assert.equal(poller.getIntervalMs("blog"), 20);
+        // nothing new: 20 -> 40
+        await poller.pollOnce();
+        assert.equal(poller.getIntervalMs("blog"), 40);
+        // nothing new: 40 -> 80
+        await poller.pollOnce();
+        assert.equal(poller.getIntervalMs("blog"), 80);
+        // nothing new: 80 -> 160, clamped to 100
+        await poller.pollOnce();
+        assert.equal(poller.getIntervalMs("blog"), 100);
+        // stays clamped at the max
+        await poller.pollOnce();
+        assert.equal(poller.getIntervalMs("blog"), 100);
+    });
+
+    it("resets the interval to the minimum as soon as a new item shows up", async () => {
+        const { bot } = createStubBot();
+        const older = item("older", new Date("2026-01-01"));
+        const newer = item("newer", new Date("2026-01-02"));
+        let items = [older];
+        const fetchFeed = mock.fn(() => Promise.resolve(items));
+        const source: FeedSource = { name: "blog", parser, url: "https://example.com/feed" };
+        const poller = createPoller(bot, [source], {
+            backoffMultiplier: 2,
+            fetchFeed,
+            maxIntervalMs: 1000,
+            minIntervalMs: 10,
+        });
+
+        await poller.pollOnce();
+        await poller.pollOnce();
+        await poller.pollOnce();
+        assert.equal(poller.getIntervalMs("blog"), 80);
+
+        items = [older, newer];
+        await poller.pollOnce();
+
+        assert.equal(poller.getIntervalMs("blog"), 10);
+    });
+
+    it("backs off after a failed poll too, so a broken source isn't hammered", async () => {
+        const { bot } = createStubBot();
+        const fetchFeed = mock.fn(() => Promise.reject(new Error("network error")));
+        const source: FeedSource = { name: "broken", parser, url: "https://example.com/broken" };
+        const poller = createPoller(bot, [source], {
+            backoffMultiplier: 2,
+            fetchFeed,
+            maxIntervalMs: 1000,
+            minIntervalMs: 10,
+        });
+
+        await poller.pollOnce();
+        assert.equal(poller.getIntervalMs("broken"), 20);
+        await poller.pollOnce();
+        assert.equal(poller.getIntervalMs("broken"), 40);
+    });
+
+    it("start() reschedules each source with its own adaptive interval", async () => {
+        const { bot } = createStubBot();
+        const fetchFeed = mock.fn(() => Promise.resolve([item("only", new Date("2026-01-01"))]));
+        const source: FeedSource = { name: "blog", parser, url: "https://example.com/feed" };
+        const poller = createPoller(bot, [source], { fetchFeed, minIntervalMs: 10 });
+
+        const stop = poller.start();
+        await new Promise((resolve) => {
+            setTimeout(resolve, 50);
+        });
+        stop();
+
+        assert.ok(fetchFeed.mock.callCount() >= 2);
     });
 });
