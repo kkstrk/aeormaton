@@ -17,6 +17,7 @@
         "isolatedModules": true,
         "moduleDetection": "force",
         "resolveJsonModule": true,
+        "rootDir": "src",
         "outDir": "dist",
         "sourceMap": true,
         "incremental": true,
