@@ -1,21 +1,12 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 
-import {
-    parseItems,
-    parseNewsItems,
-    parseTikTokItems,
-    parseTwitterItems,
-} from "./utils/parsers.js";
+import { parseTikTokItems, parseTwitterItems } from "./utils/parsers.js";
 
 import type { PostPayload } from "@skyware/bot";
-import type { SuperfeedrItem } from "./types/index.js";
+import type { BotClient, SuperfeedrItem } from "./types/index.js";
 
-export interface BotClient {
-    session: unknown;
-    post: (post: PostPayload) => Promise<unknown>;
-    postThread: (posts: PostPayload[]) => Promise<unknown>;
-}
+export type { BotClient } from "./types/index.js";
 
 export const createApp = (bot: BotClient) => {
     const app = new Hono();
@@ -58,10 +49,7 @@ export const createApp = (bot: BotClient) => {
         });
     };
 
-    useEndpoint("/blog", parseItems);
-    useEndpoint("/youtube", parseItems);
     useEndpoint("/tiktok", parseTikTokItems);
-    useEndpoint("/news", parseNewsItems);
     useEndpoint("/twitter", parseTwitterItems);
 
     // version the api

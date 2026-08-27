@@ -5,7 +5,7 @@ import { getDifference } from "./dates.js";
 import decodeGoogleNewsUrl from "./decodeGoogleNewsUrl.js";
 
 import type { PostPayload } from "@skyware/bot";
-import type { SuperfeedrItem } from "../types/index.js";
+import type { FeedItem, SuperfeedrItem } from "../types/index.js";
 
 const newsSourcesRegex = new RegExp(
     `(${Object.keys(newsSources)
@@ -52,7 +52,7 @@ const parseMembers = (
     });
 };
 
-const isRecentlyPublished = (published: number) => getDifference(new Date(published * 1000)) >= -48;
+const isRecentlyPublished = (publishedAt: Date) => getDifference(publishedAt) >= -48;
 
 const limit = 300;
 const parseText = (text: string) => {
@@ -88,9 +88,9 @@ const splitText = (text: string): string[] => {
     );
 };
 
-export const parseItems = (items: SuperfeedrItem[]): PostPayload[] =>
+export const parseItems = (items: FeedItem[]): PostPayload[] =>
     items.map((item) => ({
-        external: item.permalinkUrl,
+        external: item.url,
         text: parseText(item.title),
     }));
 
@@ -114,20 +114,20 @@ export const parseTikTokItems = (items: SuperfeedrItem[]): PostPayload[] =>
         };
     });
 
-export const parseNewsItems = async (items: SuperfeedrItem[]): Promise<PostPayload[]> => {
+export const parseNewsItems = async (items: FeedItem[]): Promise<PostPayload[]> => {
     // filter items published less than 2 days ago and not in blacklist
-    const filteredItems = items.filter(({ published, title }) => {
+    const filteredItems = items.filter(({ publishedAt, title }) => {
         const isBlacklisted = newsBlacklist.some((expression) => {
             if (expression instanceof RegExp) {
                 return expression.test(title);
             }
             return title.includes(expression);
         });
-        return isRecentlyPublished(published) && !isBlacklisted;
+        return isRecentlyPublished(publishedAt) && !isBlacklisted;
     });
 
     const decodedUrls = await Promise.all(
-        filteredItems.map(async (item) => await decodeGoogleNewsUrl(item.permalinkUrl)),
+        filteredItems.map(async (item) => await decodeGoogleNewsUrl(item.url)),
     );
 
     return filteredItems.map((item, index) => {
@@ -153,7 +153,7 @@ export const parseTwitterItems = (items: SuperfeedrItem[]): (PostPayload | PostP
     // filter items published less than 2 days ago and retweets and replies
     const filteredItems = items.filter(({ published, title }) => {
         const isRetweetOrReply = /^(?:RT\s|Re\s)/gu.test(title);
-        return isRecentlyPublished(published) && !isRetweetOrReply;
+        return isRecentlyPublished(new Date(published * 1000)) && !isRetweetOrReply;
     });
     return filteredItems.map((item) => {
         let text = convert(item.summary, {

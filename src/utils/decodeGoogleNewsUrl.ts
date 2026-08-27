@@ -2,6 +2,8 @@
 
 import * as cheerio from "cheerio";
 
+import { userAgent } from "../constants/index.js";
+
 const getBase64Str = (sourceUrl: string): string => {
     try {
         const url = new URL(sourceUrl);
@@ -70,8 +72,7 @@ const decodeUrl = async (
         ];
         const headers = {
             "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-            "User-Agent":
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+            "User-Agent": userAgent,
         };
 
         const response = await fetch(url, {

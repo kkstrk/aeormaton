@@ -47,11 +47,11 @@ describe("createApp", () => {
         assert.deepEqual(await response.json(), { connected: false, status: "ok" });
     });
 
-    it("POST /api/v1/blog posts each parsed item", async () => {
+    it("POST /api/v1/tiktok posts each parsed item", async () => {
         const { bot, post, postThread } = createStubBot();
         const app = createApp(bot);
 
-        const response = await postJson(app, "/api/v1/blog", {
+        const response = await postJson(app, "/api/v1/tiktok", {
             items: [
                 { ...mockItem, title: "first" },
                 { ...mockItem, title: "second" },
@@ -64,11 +64,11 @@ describe("createApp", () => {
         assert.equal(postThread.mock.callCount(), 0);
     });
 
-    it("POST /api/v1/blog does nothing when the parser returns no posts", async () => {
+    it("POST /api/v1/tiktok does nothing when the parser returns no posts", async () => {
         const { bot, post } = createStubBot();
         const app = createApp(bot);
 
-        const response = await postJson(app, "/api/v1/blog", { items: [] });
+        const response = await postJson(app, "/api/v1/tiktok", { items: [] });
 
         assert.equal(response.status, 200);
         assert.equal(post.mock.callCount(), 0);
@@ -88,14 +88,14 @@ describe("createApp", () => {
         assert.equal(postThread.mock.callCount(), 1);
     });
 
-    it("POST /api/v1/blog returns a 500 when the bot fails to post", async () => {
+    it("POST /api/v1/tiktok returns a 500 when the bot fails to post", async () => {
         const { bot } = createStubBot();
         bot.post = mock.fn(() => {
             throw new Error("Bluesky is down");
         });
         const app = createApp(bot);
 
-        const response = await postJson(app, "/api/v1/blog", { items: [mockItem] });
+        const response = await postJson(app, "/api/v1/tiktok", { items: [mockItem] });
 
         assert.equal(response.status, 500);
     });

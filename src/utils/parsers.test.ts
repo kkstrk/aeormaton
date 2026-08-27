@@ -10,27 +10,33 @@ const mockItem = {
     title: "title",
 };
 
+const mockFeedItem = {
+    publishedAt: new Date(),
+    title: "title",
+    url: "url",
+};
+
 describe("parseItems", () => {
     it("should return an array of posts", () => {
         const items = [
-            { ...mockItem, title: "title1" },
-            { ...mockItem, title: "title2" },
+            { ...mockFeedItem, title: "title1" },
+            { ...mockFeedItem, title: "title2" },
         ];
         const result = parseItems(items);
         assert.equal(result.length, items.length);
         result.forEach((post, index) => {
             assert.equal(post?.text, items[index]?.title);
-            assert.equal(post?.external, items[index]?.permalinkUrl);
+            assert.equal(post?.external, items[index]?.url);
         });
     });
 
     it("should trim post text", () => {
-        const [item] = parseItems([{ ...mockItem, title: "   title1 " }]);
+        const [item] = parseItems([{ ...mockFeedItem, title: "   title1 " }]);
         assert.equal(item?.text, "title1");
     });
 
     it("should truncate post text", () => {
-        const items = [{ ...mockItem, title: `${"text ".repeat(60)} over limit` }];
+        const items = [{ ...mockFeedItem, title: `${"text ".repeat(60)} over limit` }];
         const [item] = parseItems(items);
         const text = typeof item?.text === "string" ? item?.text : String(item?.text);
         assert.ok(text.length <= 300);
@@ -91,40 +97,46 @@ describe("parseTikTokItems", () => {
 describe("parseNewsItems", () => {
     it("should return an array of posts", async () => {
         const items = [
-            { ...mockItem, title: "title1" },
-            { ...mockItem, title: "title2" },
+            { ...mockFeedItem, title: "title1" },
+            { ...mockFeedItem, title: "title2" },
         ];
         const result = await parseNewsItems(items);
         assert.equal(result.length, items.length);
         result.forEach((post, index) => {
             assert.equal(post.text, items[index]?.title);
-            assert.equal(post.external, items[index]?.permalinkUrl);
+            assert.equal(post.external, items[index]?.url);
         });
     });
 
     it("should exclude posts published more than 48 hours ago", async () => {
         const result = await parseNewsItems([
-            { ...mockItem, published: new Date().setHours(new Date().getHours() - 49) / 1000 },
-            { ...mockItem, published: new Date().setDate(new Date().getDate() - 3) / 1000 },
+            {
+                ...mockFeedItem,
+                publishedAt: new Date(new Date().setHours(new Date().getHours() - 49)),
+            },
+            {
+                ...mockFeedItem,
+                publishedAt: new Date(new Date().setDate(new Date().getDate() - 3)),
+            },
         ]);
         assert.equal(result.length, 0);
     });
 
     it("should exclude posts with blacklisted text", async () => {
         const result = await parseNewsItems([
-            { ...mockItem, title: "A post - MSN" },
-            { ...mockItem, title: "A post - Yahoo Entertainment" },
-            { ...mockItem, title: "This is likely not a post about critical role" },
-            { ...mockItem, title: "Something played a Critical Role in something random" },
+            { ...mockFeedItem, title: "A post - MSN" },
+            { ...mockFeedItem, title: "A post - Yahoo Entertainment" },
+            { ...mockFeedItem, title: "This is likely not a post about critical role" },
+            { ...mockFeedItem, title: "Something played a Critical Role in something random" },
         ]);
         assert.equal(result.length, 0);
     });
 
     it("should replace first occurrence of Critical Role with #CriticalRole", async () => {
         const result = await parseNewsItems([
-            { ...mockItem, title: "A post w/ Critical Role" },
-            { ...mockItem, title: "A post w/ Critical Role. Also, Critical Role" },
-            { ...mockItem, title: "A post w/ Critical Role's founders" },
+            { ...mockFeedItem, title: "A post w/ Critical Role" },
+            { ...mockFeedItem, title: "A post w/ Critical Role. Also, Critical Role" },
+            { ...mockFeedItem, title: "A post w/ Critical Role's founders" },
         ]);
         assert.equal(result[0]?.text, "A post w/ #CriticalRole");
         assert.equal(result[1]?.text, "A post w/ #CriticalRole. Also, Critical Role");
@@ -133,10 +145,13 @@ describe("parseNewsItems", () => {
 
     it("should add bsky handles for CR members", async () => {
         const result = await parseNewsItems([
-            { ...mockItem, title: "A post w/ Marisha Ray" },
-            { ...mockItem, title: "A post w/ Laura Bailey" },
-            { ...mockItem, title: "A post w/ Matthew Mercer and Matthew Mercer and Matt Mercer" },
-            { ...mockItem, title: "A post w/ Laura Bailey and Matt Mercer" },
+            { ...mockFeedItem, title: "A post w/ Marisha Ray" },
+            { ...mockFeedItem, title: "A post w/ Laura Bailey" },
+            {
+                ...mockFeedItem,
+                title: "A post w/ Matthew Mercer and Matthew Mercer and Matt Mercer",
+            },
+            { ...mockFeedItem, title: "A post w/ Laura Bailey and Matt Mercer" },
         ]);
         assert.equal(result[0]?.text, "A post w/ Marisha Ray");
         assert.equal(result[1]?.text, "A post w/ Laura Bailey (@laurabaileyvo.bsky.social)");
@@ -152,9 +167,9 @@ describe("parseNewsItems", () => {
 
     it("should add bsky handles for news sources", async () => {
         const result = await parseNewsItems([
-            { ...mockItem, title: "A post - Variety" },
-            { ...mockItem, title: "A post - XYZ" },
-            { ...mockItem, title: "A post w/ Polygon - Polygon" },
+            { ...mockFeedItem, title: "A post - Variety" },
+            { ...mockFeedItem, title: "A post - XYZ" },
+            { ...mockFeedItem, title: "A post w/ Polygon - Polygon" },
         ]);
         assert.equal(result[0]?.text, "A post - Variety (@variety.com)");
         assert.equal(result[1]?.text, "A post - XYZ");
