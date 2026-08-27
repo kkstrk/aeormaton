@@ -1,9 +1,7 @@
 import { AppTokenAuthProvider } from "@twurple/auth";
 import { ApiClient } from "@twurple/api";
 
-import { requiredEnv, useEnv } from "../utils/useEnv.js";
-
-useEnv();
+import { requiredEnv } from "../utils/useEnv.js";
 
 const authProvider = new AppTokenAuthProvider(
     requiredEnv("TWITCH_CLIENT_ID"),

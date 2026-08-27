@@ -1,13 +1,11 @@
 import { Bot } from "@skyware/bot";
 
-import { requiredEnv, useEnv } from "../utils/useEnv.js";
+import { requiredEnv } from "../utils/useEnv.js";
 import { login } from "./login.js";
 import { handleCommands } from "./commands.js";
 import BotPosts from "./posts.js";
 
 import type { PostPayload } from "@skyware/bot";
-
-useEnv();
 
 const bot = new Bot();
 const session = login(bot);

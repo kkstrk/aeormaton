@@ -1,8 +1,6 @@
-import { requiredEnv, useEnv } from "../utils/useEnv.js";
+import { requiredEnv } from "../utils/useEnv.js";
 
 import type { Bot } from "@skyware/bot";
-
-useEnv();
 
 let session: Awaited<ReturnType<Bot["login"]>> | undefined;
 
