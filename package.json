@@ -2,9 +2,11 @@
     "name": "aeormaton",
     "type": "module",
     "version": "1.0.0",
-    "main": "index.js",
     "license": "MIT",
     "author": "Kasia Kosturek",
+    "engines": {
+        "node": ">=22.6.0"
+    },
     "scripts": {
         "dev": "tsx watch src/index.ts",
         "build": "tsc",
