@@ -17,17 +17,15 @@
         "types": "tsc --noEmit"
     },
     "dependencies": {
+        "@hono/node-server": "^2.1.1",
         "@skyware/bot": "^0.4.1",
         "@twurple/api": "^8.1.4",
         "@twurple/auth": "^8.1.4",
         "cheerio": "^1.2.0",
-        "cors": "^2.8.6",
-        "express": "^5.2.1",
+        "hono": "^4.13.4",
         "html-to-text": "^10.0.1"
     },
     "devDependencies": {
-        "@types/cors": "^2.8.19",
-        "@types/express": "^5.0.6",
         "@types/html-to-text": "^9.0.4",
         "@types/node": "^26.2.0",
         "oxfmt": "^0.65.0",

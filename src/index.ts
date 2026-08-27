@@ -1,7 +1,14 @@
 import "./utils/useEnv.js";
 
-import { app } from "./app.js";
+import { serve } from "@hono/node-server";
 
-const port = process.env.PORT || 3333;
+import { createApp } from "./app.js";
+import bot from "./bot/bot.js";
 
-app.listen(port, () => console.log(`API available on http://localhost:${port}`));
+const app = createApp(bot);
+
+const port = Number(process.env.PORT) || 3333;
+
+serve({ fetch: app.fetch, port }, (info) =>
+    console.log(`API available on http://localhost:${info.port}`),
+);

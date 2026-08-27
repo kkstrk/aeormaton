@@ -1,7 +1,6 @@
-import express from "express";
-import cors from "cors";
+import { Hono } from "hono";
+import { cors } from "hono/cors";
 
-import bot from "./bot/bot.js";
 import {
     parseItems,
     parseNewsItems,
@@ -12,57 +11,61 @@ import {
 import type { PostPayload } from "@skyware/bot";
 import type { SuperfeedrItem } from "./types/index.js";
 
-export const app = express();
+export interface BotClient {
+    session: unknown;
+    post: (post: PostPayload) => Promise<unknown>;
+    postThread: (posts: PostPayload[]) => Promise<unknown>;
+}
 
-app.use(cors({ origin: true }));
+export const createApp = (bot: BotClient) => {
+    const app = new Hono();
 
-app.use(express.json());
-app.use(express.raw({ type: "application/vnd.custom-type" }));
-app.use(express.text({ type: "text/html" }));
+    app.use(cors());
 
-// healthcheck endpoint
-app.get("/", (_req, res) => {
-    res.status(200).send({ connected: !!bot.session, status: "ok" });
-});
+    // healthcheck endpoint
+    app.get("/", (c) => c.json({ connected: !!bot.session, status: "ok" }));
 
-// eslint-disable-next-line new-cap
-const api = express.Router();
+    const api = new Hono();
 
-const useEndpoint = (
-    endpoint: string,
-    parser: (
-        items: SuperfeedrItem[],
-    ) => (PostPayload | PostPayload[])[] | Promise<(PostPayload | PostPayload[])[]>,
-) => {
-    api.post(endpoint, async (req, res) => {
-        console.log(`POST at ${endpoint} with body:`);
-        console.log(req.body);
-        try {
-            const posts = await parser(req.body.items);
-            if (posts.length > 0) {
-                for (const post of posts) {
-                    if (Array.isArray(post)) {
-                        await bot.postThread(post);
-                    } else {
-                        await bot.post(post);
+    const useEndpoint = (
+        endpoint: string,
+        parser: (
+            items: SuperfeedrItem[],
+        ) => (PostPayload | PostPayload[])[] | Promise<(PostPayload | PostPayload[])[]>,
+    ) => {
+        api.post(endpoint, async (c) => {
+            try {
+                const body = await c.req.json();
+                console.log(`POST at ${endpoint} with body:`);
+                console.log(body);
+                const posts = await parser(body.items);
+                if (posts.length > 0) {
+                    for (const post of posts) {
+                        if (Array.isArray(post)) {
+                            await bot.postThread(post);
+                        } else {
+                            await bot.post(post);
+                        }
                     }
+                } else {
+                    console.log("There are no new updates to post.");
                 }
-            } else {
-                console.log("There are no new updates to post.");
+                return c.json({ message: "ok" });
+            } catch (error) {
+                console.log("Could not post feed update.", error);
+                return c.json({ error: String(error) }, 500);
             }
-            res.status(200).send({ message: "ok" });
-        } catch (error) {
-            console.log("Could not post feed update.", error);
-            res.status(500).send({ error });
-        }
-    });
+        });
+    };
+
+    useEndpoint("/blog", parseItems);
+    useEndpoint("/youtube", parseItems);
+    useEndpoint("/tiktok", parseTikTokItems);
+    useEndpoint("/news", parseNewsItems);
+    useEndpoint("/twitter", parseTwitterItems);
+
+    // version the api
+    app.route("/api/v1", api);
+
+    return app;
 };
-
-useEndpoint("/blog", parseItems);
-useEndpoint("/youtube", parseItems);
-useEndpoint("/tiktok", parseTikTokItems);
-useEndpoint("/news", parseNewsItems);
-useEndpoint("/twitter", parseTwitterItems);
-
-// version the api
-app.use("/api/v1", api);
