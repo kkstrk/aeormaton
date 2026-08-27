@@ -40,8 +40,8 @@ const commands: Record<string, Command> = {
 
 export const handleCommands = async (post: Post) => {
     const allCommandNames = post.text.match(/!\S+/gu) || [];
-    const commandNames = [...new Set(allCommandNames)].filter(
-        (commandName) => !!commands[commandName],
+    const commandNames = [...new Set(allCommandNames)].filter((commandName) =>
+        Boolean(commands[commandName]),
     );
     for (const commandName of commandNames) {
         console.log(`Running ${commandName} command.`);

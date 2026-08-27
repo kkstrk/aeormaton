@@ -1,3 +1,5 @@
+import { setTimeout } from "node:timers/promises";
+
 export const retry = async <T>(
     fn: () => Promise<T>,
     { attempts = 3, delayMs = 1000 }: { attempts?: number; delayMs?: number } = {},
@@ -9,9 +11,7 @@ export const retry = async <T>(
         } catch (error) {
             lastError = error;
             if (attempt < attempts) {
-                await new Promise((resolve) => {
-                    setTimeout(resolve, delayMs * attempt);
-                });
+                await setTimeout(delayMs * attempt);
             }
         }
     }

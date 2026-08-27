@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it, mock } from "node:test";
+import { setTimeout } from "node:timers/promises";
 
 import { createPoller } from "./poller.js";
 
@@ -160,9 +161,7 @@ describe("createPoller adaptive interval", () => {
         const poller = createPoller(bot, [source], { fetchFeed, minIntervalMs: 10 });
 
         const stop = poller.start();
-        await new Promise((resolve) => {
-            setTimeout(resolve, 50);
-        });
+        await setTimeout(50);
         stop();
 
         assert.ok(fetchFeed.mock.callCount() >= 2);

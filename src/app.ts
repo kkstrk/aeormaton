@@ -11,7 +11,7 @@ export const createApp = (bot: BotClient) => {
     app.use(cors());
 
     // healthcheck endpoint
-    app.get("/", (c) => c.json({ connected: !!bot.session, status: "ok" }));
+    app.get("/", (c) => c.json({ connected: Boolean(bot.session), status: "ok" }));
 
     return app;
 };

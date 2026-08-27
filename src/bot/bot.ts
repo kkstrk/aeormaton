@@ -14,7 +14,7 @@ const session = login(bot);
 const botPosts = new BotPosts();
 
 await session;
-console.log("Has session: ", bot.hasSession);
+console.log("Has session:", bot.hasSession);
 
 try {
     const { posts } = await retry(() =>
@@ -34,7 +34,7 @@ bot.on("error", (error) => {
     console.error("Bot encountered an error.", error);
 });
 
-export default {
+const botClient = {
     session,
     post: async (post: PostPayload) => {
         if (botPosts.has(post)) {
@@ -72,3 +72,5 @@ export default {
         }
     },
 };
+
+export default botClient;
