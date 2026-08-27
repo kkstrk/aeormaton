@@ -1,6 +1,7 @@
 import { Bot } from "@skyware/bot";
 
 import { requiredEnv } from "../utils/useEnv.js";
+import { retry } from "../utils/retry.js";
 import { login } from "./login.js";
 import { handleCommands } from "./commands.js";
 import BotPosts from "./posts.js";
@@ -16,9 +17,9 @@ await session;
 console.log("Has session: ", bot.hasSession);
 
 try {
-    const { posts } = await bot.getUserPosts(requiredEnv("BSKY_DID"), {
-        filter: "posts_and_author_threads",
-    });
+    const { posts } = await retry(() =>
+        bot.getUserPosts(requiredEnv("BSKY_DID"), { filter: "posts_and_author_threads" }),
+    );
     posts.forEach((post) => botPosts.add(post));
     console.log("Successfully fetched posts.");
 } catch (error) {
