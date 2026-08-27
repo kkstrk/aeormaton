@@ -81,10 +81,14 @@ export const createStreamReminder = (bot: BotClient, options: StreamReminderOpti
             delayMs = next.delayMs;
 
             if (next.shouldRemind && segment && segment.id !== remindedSegmentId) {
+                // mark before posting: the reminder text embeds a live
+                // countdown, so a retried post after a lost response
+                // wouldn't even be caught by bot.ts's text-based dedup --
+                // recording the segment ID first avoids a duplicate reminder
+                remindedSegmentId = segment.id;
                 await bot.post({
                     text: `${segment.title} starts in ${getRemainingTime(segment.startDate)}! ${TWITCH_CHANNEL_URL}`,
                 });
-                remindedSegmentId = segment.id;
             }
         } catch (error) {
             console.error("Could not check for an upcoming stream reminder.", error);

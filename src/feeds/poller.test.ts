@@ -64,6 +64,31 @@ describe("createPoller", () => {
         assert.equal(post.mock.callCount(), 0);
     });
 
+    it("does not retry an item on the next poll if posting it throws (e.g. a lost response after a successful write)", async () => {
+        const { bot, post } = createStubBot();
+        const older = item("older", new Date("2026-01-01"));
+        const newer = item("newer", new Date("2026-01-02"));
+        let items = [older];
+        const fetchFeed = mock.fn(() => Promise.resolve(items));
+        const source: FeedSource = { name: "blog", parser, url: "https://example.com/feed" };
+        const poller = createPoller(bot, [source], { fetchFeed });
+
+        // baseline = older
+        await poller.pollOnce();
+
+        items = [older, newer];
+        post.mock.mockImplementationOnce(() => {
+            throw new Error("upstream timeout, but the write may have gone through");
+        });
+        // detects "newer", attempts to post, throws
+        await poller.pollOnce();
+
+        // should not retry "newer"
+        await poller.pollOnce();
+
+        assert.equal(post.mock.callCount(), 1);
+    });
+
     it("keeps polling other sources when one source fails", async () => {
         const { bot, post } = createStubBot();
         const failingFetch = mock.fn(() => Promise.reject(new Error("network error")));

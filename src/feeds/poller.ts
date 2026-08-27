@@ -55,6 +55,13 @@ export const createPoller = (
 
         console.log(`Found ${newItems.length} new item(s) for "${source.name}".`);
         const posts = await source.parser(newItems);
+
+        // advance the cursor before posting: if a post throws after the
+        // write actually reached Bluesky (a lost response, not a genuine
+        // failure), the next poll would otherwise see these items as new
+        // again and post them a second time
+        lastPublishedAt.set(source.name, newItems.at(-1)?.publishedAt ?? lastSeen);
+
         for (const post of posts) {
             if (Array.isArray(post)) {
                 await bot.postThread(post);
@@ -63,7 +70,6 @@ export const createPoller = (
             }
         }
 
-        lastPublishedAt.set(source.name, newItems.at(-1)?.publishedAt ?? lastSeen);
         return true;
     };
 

@@ -41,9 +41,13 @@ const botClient = {
             console.log(`Skipping post ${JSON.stringify(post)} because it is a duplicate.`);
         } else {
             await session;
+            // mark as posted before attempting the call: if bot.post()
+            // throws after the write actually reached Bluesky (a lost
+            // response, not a genuine failure -- this account has seen
+            // plenty of those), we'd otherwise retry and post it twice
+            botPosts.add(post);
             console.log(`Posting ${JSON.stringify(post)}.`);
             await bot.post(post);
-            botPosts.add(post);
             console.log("Successfully posted to Bluesky.");
         }
     },
@@ -56,9 +60,9 @@ const botClient = {
             console.log(`Skipping thread ${JSON.stringify(post)} because it is a duplicate.`);
         } else {
             await session;
+            botPosts.add(post);
             console.log(`Posting thread with ${replies.length} replies.`);
             const { uri, cid } = await bot.post(post);
-            botPosts.add(post);
             console.log("Successfully posted first post to Bluesky.");
 
             const root = { uri, cid };

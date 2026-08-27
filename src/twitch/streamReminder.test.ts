@@ -123,6 +123,22 @@ describe("createStreamReminder", () => {
         assert.equal(post.mock.callCount(), 1);
     });
 
+    it("does not retry a reminder on the next check if posting it throws (e.g. a lost response after a successful write)", async () => {
+        const { bot, post } = createStubBot();
+        const getNextBroadcast = mock.fn(() => Promise.resolve(segmentStartingIn(20)));
+        post.mock.mockImplementationOnce(() => {
+            throw new Error("upstream timeout, but the write may have gone through");
+        });
+        const reminder = createStreamReminder(bot, { getNextBroadcast });
+
+        // attempts to post, throws
+        await reminder.checkOnce();
+        // should not retry the same segment
+        await reminder.checkOnce();
+
+        assert.equal(post.mock.callCount(), 1);
+    });
+
     it("reminds again once a new segment shows up", async () => {
         let segment = segmentStartingIn(20);
         const { bot, post } = createStubBot();
