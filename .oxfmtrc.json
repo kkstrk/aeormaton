@@ -3,13 +3,6 @@
     "tabWidth": 4,
     "sortPackageJson": false,
     "ignorePatterns": [
-        ".gitkeep",
-        ".env*",
-        "*.ico",
-        "*.lock",
-        "db/migrations",
-        ".yarn",
-        ".pnp*",
         "node_modules"
     ]
 }
