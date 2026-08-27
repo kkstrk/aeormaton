@@ -94,6 +94,9 @@ export const parseItems = (items: FeedItem[]): PostPayload[] =>
         text: parseText(item.title),
     }));
 
+// Unused: no endpoint calls this since /tiktok was removed. TikTok has no
+// free API, and the only scraping route we found (RSSHub) is currently
+// blocked on its public instance -- kept in case a workable source shows up.
 export const parseTikTokItems = (items: SuperfeedrItem[]): PostPayload[] =>
     items.map((item) => {
         // remove mentions and hashtags at the end of the string
@@ -149,6 +152,9 @@ export const parseNewsItems = async (items: FeedItem[]): Promise<PostPayload[]> 
 const videoRegex = /\[video:(?<url>[^\]]+)\]/gimu;
 const imageRegex = /\[img:(?<url>[^\]]+)\]/gimu;
 
+// Unused: no endpoint calls this since /twitter was removed. Twitter/X has
+// no free API -- scraping it needs a real logged-in account's session token,
+// not worth the ban risk -- kept in case that changes.
 export const parseTwitterItems = (items: SuperfeedrItem[]): (PostPayload | PostPayload[])[] => {
     // filter items published less than 2 days ago and retweets and replies
     const filteredItems = items.filter(({ published, title }) => {

@@ -1,5 +1,8 @@
 import type { PostPayload } from "@skyware/bot";
 
+// Unused right now: nothing calls parseTikTokItems/parseTwitterItems since
+// Superfeedr stopped pushing to /tiktok and /twitter (see parsers.ts). Kept
+// around for if a workable source for either shows up again.
 export interface SuperfeedrItem {
     title: string;
     permalinkUrl: string;
