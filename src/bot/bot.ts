@@ -29,6 +29,10 @@ try {
 bot.on("reply", handleCommands);
 bot.on("mention", handleCommands);
 
+bot.on("error", (error) => {
+    console.error("Bot encountered an error.", error);
+});
+
 export default {
     session,
     post: async (post: PostPayload) => {
