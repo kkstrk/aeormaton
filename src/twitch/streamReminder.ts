@@ -1,5 +1,4 @@
 import { getNextBroadcast as defaultGetNextBroadcast, TWITCH_CHANNEL_URL } from "../api/twitch.js";
-import { getRemainingTime } from "../utils/dates.js";
 
 import type { BotClient } from "../types/index.js";
 
@@ -87,7 +86,7 @@ export const createStreamReminder = (bot: BotClient, options: StreamReminderOpti
                 // recording the segment ID first avoids a duplicate reminder
                 remindedSegmentId = segment.id;
                 await bot.post({
-                    text: `${segment.title} starts in ${getRemainingTime(segment.startDate)}! ${TWITCH_CHANNEL_URL}`,
+                    text: `${segment.title} starts in ${reminderMinutesBefore} minutes! ${TWITCH_CHANNEL_URL}`,
                 });
             }
         } catch (error) {

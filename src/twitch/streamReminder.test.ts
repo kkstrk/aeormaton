@@ -91,7 +91,27 @@ describe("createStreamReminder", () => {
         await createStreamReminder(bot, { getNextBroadcast }).checkOnce();
 
         assert.equal(post.mock.callCount(), 1);
-        assert.match(String(post.mock.calls[0]?.arguments[0].text), /Campaign 4 starts in/u);
+        assert.equal(
+            post.mock.calls[0]?.arguments[0].text,
+            "Campaign 4 starts in 30 minutes! https://www.twitch.tv/criticalrole",
+        );
+    });
+
+    it("always uses the configured reminderMinutesBefore in the text, not a live countdown", async () => {
+        const { bot, post } = createStubBot();
+        // the check fires a few minutes into the reminder window, not at
+        // the exact instant it opened
+        const getNextBroadcast = mock.fn(() => Promise.resolve(segmentStartingIn(21)));
+
+        await createStreamReminder(bot, {
+            getNextBroadcast,
+            reminderMinutesBefore: 30,
+        }).checkOnce();
+
+        assert.equal(
+            post.mock.calls[0]?.arguments[0].text,
+            "Campaign 4 starts in 30 minutes! https://www.twitch.tv/criticalrole",
+        );
     });
 
     it("does not post when the stream is further away than the threshold", async () => {
