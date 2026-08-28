@@ -131,11 +131,26 @@ export const parseNewsItems = async (items: FeedItem[]): Promise<PostPayload[]> 
         return isRecentlyPublished(publishedAt) && !isBlacklisted;
     });
 
-    const decodedUrls = await Promise.all(
-        filteredItems.map(async (item) => await decodeGoogleNewsUrl(item.url)),
+    const itemsWithDecodedUrls = await Promise.all(
+        filteredItems.map(async (item) => ({
+            decodedUrl: await decodeGoogleNewsUrl(item.url),
+            item,
+        })),
     );
 
-    return filteredItems.map((item, index) => {
+    // Google News can list the same story twice under different tracking
+    // URLs (e.g. surfaced via two different search matches); both decode to
+    // the same article URL, so drop the repeat to avoid posting it twice.
+    const seenUrls = new Set<string>();
+    const dedupedItems = itemsWithDecodedUrls.filter(({ decodedUrl }) => {
+        if (seenUrls.has(decodedUrl)) {
+            return false;
+        }
+        seenUrls.add(decodedUrl);
+        return true;
+    });
+
+    return dedupedItems.map(({ decodedUrl, item }) => {
         let text = item.title.replace(/Critical Role(?:[’'‘`´]s)?/u, "#CriticalRole");
         text = parseMembers(text, ({ name, bsky }) => (bsky ? `${name} (${bsky})` : name));
         text = text.replace(
@@ -145,7 +160,7 @@ export const parseNewsItems = async (items: FeedItem[]): Promise<PostPayload[]> 
         text = parseText(text);
 
         return {
-            external: decodedUrls[index],
+            external: decodedUrl,
             text,
         };
     });

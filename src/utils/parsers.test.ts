@@ -97,8 +97,8 @@ describe("parseTikTokItems", () => {
 describe("parseNewsItems", () => {
     it("should return an array of posts", async () => {
         const items = [
-            { ...mockFeedItem, title: "title1" },
-            { ...mockFeedItem, title: "title2" },
+            { ...mockFeedItem, title: "title1", url: "url1" },
+            { ...mockFeedItem, title: "title2", url: "url2" },
         ];
         const result = await parseNewsItems(items);
         assert.equal(result.length, items.length);
@@ -106,6 +106,15 @@ describe("parseNewsItems", () => {
             assert.equal(post.text, items[index]?.title);
             assert.equal(post.external, items[index]?.url);
         });
+    });
+
+    it("should drop items that decode to a URL already seen", async () => {
+        const result = await parseNewsItems([
+            { ...mockFeedItem, title: "title1", url: "url" },
+            { ...mockFeedItem, title: "title2", url: "url" },
+        ]);
+        assert.equal(result.length, 1);
+        assert.equal(result[0]?.text, "title1");
     });
 
     it("should exclude posts published more than 48 hours ago", async () => {
@@ -134,9 +143,13 @@ describe("parseNewsItems", () => {
 
     it("should replace first occurrence of Critical Role with #CriticalRole", async () => {
         const result = await parseNewsItems([
-            { ...mockFeedItem, title: "A post w/ Critical Role" },
-            { ...mockFeedItem, title: "A post w/ Critical Role. Also, Critical Role" },
-            { ...mockFeedItem, title: "A post w/ Critical Role's founders" },
+            { ...mockFeedItem, title: "A post w/ Critical Role", url: "url1" },
+            {
+                ...mockFeedItem,
+                title: "A post w/ Critical Role. Also, Critical Role",
+                url: "url2",
+            },
+            { ...mockFeedItem, title: "A post w/ Critical Role's founders", url: "url3" },
         ]);
         assert.equal(result[0]?.text, "A post w/ #CriticalRole");
         assert.equal(result[1]?.text, "A post w/ #CriticalRole. Also, Critical Role");
@@ -145,13 +158,14 @@ describe("parseNewsItems", () => {
 
     it("should add bsky handles for CR members", async () => {
         const result = await parseNewsItems([
-            { ...mockFeedItem, title: "A post w/ Marisha Ray" },
-            { ...mockFeedItem, title: "A post w/ Laura Bailey" },
+            { ...mockFeedItem, title: "A post w/ Marisha Ray", url: "url1" },
+            { ...mockFeedItem, title: "A post w/ Laura Bailey", url: "url2" },
             {
                 ...mockFeedItem,
                 title: "A post w/ Matthew Mercer and Matthew Mercer and Matt Mercer",
+                url: "url3",
             },
-            { ...mockFeedItem, title: "A post w/ Laura Bailey and Matt Mercer" },
+            { ...mockFeedItem, title: "A post w/ Laura Bailey and Matt Mercer", url: "url4" },
         ]);
         assert.equal(result[0]?.text, "A post w/ Marisha Ray");
         assert.equal(result[1]?.text, "A post w/ Laura Bailey (@laurabaileyvo.bsky.social)");
@@ -167,9 +181,9 @@ describe("parseNewsItems", () => {
 
     it("should add bsky handles for news sources", async () => {
         const result = await parseNewsItems([
-            { ...mockFeedItem, title: "A post - Variety" },
-            { ...mockFeedItem, title: "A post - XYZ" },
-            { ...mockFeedItem, title: "A post w/ Polygon - Polygon" },
+            { ...mockFeedItem, title: "A post - Variety", url: "url1" },
+            { ...mockFeedItem, title: "A post - XYZ", url: "url2" },
+            { ...mockFeedItem, title: "A post w/ Polygon - Polygon", url: "url3" },
         ]);
         assert.equal(result[0]?.text, "A post - Variety (@variety.com)");
         assert.equal(result[1]?.text, "A post - XYZ");
