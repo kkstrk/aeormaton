@@ -86,7 +86,12 @@ export const createStreamReminder = (bot: BotClient, options: StreamReminderOpti
                 // recording the segment ID first avoids a duplicate reminder
                 remindedSegmentId = segment.id;
                 await bot.post({
-                    text: `${segment.title} starts in ${reminderMinutesBefore} minutes! ${TWITCH_CHANNEL_URL}`,
+                    external: {
+                        description: "Watch live on Twitch",
+                        title: segment.title,
+                        uri: TWITCH_CHANNEL_URL,
+                    },
+                    text: `${segment.title} starts in ${reminderMinutesBefore} minutes!`,
                 });
             }
         } catch (error) {

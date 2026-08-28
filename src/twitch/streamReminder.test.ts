@@ -91,10 +91,12 @@ describe("createStreamReminder", () => {
         await createStreamReminder(bot, { getNextBroadcast }).checkOnce();
 
         assert.equal(post.mock.callCount(), 1);
-        assert.equal(
-            post.mock.calls[0]?.arguments[0].text,
-            "Campaign 4 starts in 30 minutes! https://www.twitch.tv/criticalrole",
-        );
+        assert.equal(post.mock.calls[0]?.arguments[0].text, "Campaign 4 starts in 30 minutes!");
+        assert.deepEqual(post.mock.calls[0]?.arguments[0].external, {
+            description: "Watch live on Twitch",
+            title: "Campaign 4",
+            uri: "https://www.twitch.tv/criticalrole",
+        });
     });
 
     it("always uses the configured reminderMinutesBefore in the text, not a live countdown", async () => {
@@ -108,10 +110,7 @@ describe("createStreamReminder", () => {
             reminderMinutesBefore: 30,
         }).checkOnce();
 
-        assert.equal(
-            post.mock.calls[0]?.arguments[0].text,
-            "Campaign 4 starts in 30 minutes! https://www.twitch.tv/criticalrole",
-        );
+        assert.equal(post.mock.calls[0]?.arguments[0].text, "Campaign 4 starts in 30 minutes!");
     });
 
     it("does not post when the stream is further away than the threshold", async () => {
